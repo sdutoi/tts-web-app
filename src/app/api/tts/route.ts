@@ -40,7 +40,9 @@ function mimeFor(format: AudioFormat): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = (process.env.OPENAI_API_KEY || "").trim();
+  const openaiProject = process.env.OPENAI_PROJECT_ID?.trim(); // optional, for sk-proj-* keys
+  const openaiOrg = process.env.OPENAI_ORG_ID?.trim(); // optional
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: "Missing OPENAI_API_KEY" }),
@@ -93,19 +95,71 @@ export async function POST(req: NextRequest) {
       speed,
     } as Record<string, unknown>;
 
-    const resp = await fetch(openaiUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      Accept: mimeFor(format),
+    };
+    if (openaiProject) headers["OpenAI-Project"] = openaiProject;
+    if (openaiOrg) headers["OpenAI-Organization"] = openaiOrg;
+
+    // Safe debug: log presence of headers without leaking secrets
+    console.info("TTS headers", {
+      hasKey: apiKey.startsWith("sk-"),
+      project: Boolean(openaiProject),
+      org: Boolean(openaiOrg),
     });
+
+    async function callWithRetry(attempts = 3): Promise<Response> {
+      let lastErr: unknown = null;
+      for (let i = 1; i <= attempts; i++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 30_000); // 30s timeout
+        try {
+          const resp = await fetch(openaiUrl, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+          clearTimeout(timer);
+          if (resp.ok) return resp;
+          // Retry on 429 and 5xx
+          if (resp.status === 429 || (resp.status >= 500 && resp.status <= 599)) {
+            const errText = await resp.text().catch(() => "");
+            console.warn(`OpenAI TTS retryable status ${resp.status} (attempt ${i}/${attempts})`, errText.slice(0, 200));
+          } else {
+            return resp; // non-retryable status, return immediately
+          }
+        } catch (e) {
+          lastErr = e;
+          console.warn(`OpenAI TTS network error (attempt ${i}/${attempts})`, e instanceof Error ? e.message : String(e));
+        } finally {
+          clearTimeout(timer);
+        }
+        // backoff with jitter
+        const backoffMs = Math.min(1000 * 2 ** (i - 1), 4000) + Math.floor(Math.random() * 250);
+        await new Promise((r) => setTimeout(r, backoffMs));
+      }
+      if (lastErr) throw lastErr;
+      // Fallback unreachable
+      throw new Error("OpenAI TTS failed after retries");
+    }
+
+    const resp = await callWithRetry(3);
 
     if (!resp.ok) {
       const errText = await resp.text();
+      // Redact any instance of the API key and generic sk-... tokens before logging
+      const redact = (s: string) =>
+        s
+          .replaceAll(apiKey, "[REDACTED]")
+          .replace(/sk-[a-zA-Z0-9_-]{10,}/g, "[REDACTED]");
+      console.error("OpenAI TTS error", resp.status, redact(errText));
+
+      // Return a generic error to the client without upstream details
       return new Response(
-        JSON.stringify({ error: "OpenAI TTS failed", status: resp.status, body: errText }),
+        JSON.stringify({ error: "TTS provider error", status: resp.status }),
         { status: 502, headers: { "Content-Type": "application/json" } }
       );
     }

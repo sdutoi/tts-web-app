@@ -1,0 +1,117 @@
+{
+  "language": "en",
+  "version": 2,
+  "generatedAt": "2025-09-19T00:00:00Z",
+  "categories": [
+    {
+      "id": "coffee_shop",
+      "label": "Coffee Shop / Ordering",
+      "items": [
+        { "id": "to_go_or_stay", "term": "for here or to go?", "cefr": "A2", "tags": ["service","question"], "example": "Is that for here or to go?", "hint": "barista choice" },
+        { "id": "oat_milk", "term": "oat milk", "cefr": "A2", "tags": ["noun","modifier"], "example": "Can I have a latte with oat milk?" },
+        { "id": "single_origin", "term": "single-origin beans", "cefr": "B2", "tags": ["specialty"], "example": "We feature single-origin beans today." },
+        { "id": "running_low", "term": "we're running low (on)", "cefr": "B1", "tags": ["supply","phrase"], "example": "We're running low on croissants." },
+        { "id": "tab_open", "term": "keep a tab open", "cefr": "B2", "tags": ["request"], "example": "Could you keep a tab open?" }
+      ]
+    },
+    {
+      "id": "rideshare_night_out",
+      "label": "Ride Share & Night Out",
+      "items": [
+        { "id": "shared_ride", "term": "shared ride", "cefr": "A2", "tags": ["noun_phrase"], "example": "I booked a shared ride." },
+        { "id": "surge_pricing", "term": "surge pricing", "cefr": "B1", "tags": ["market"], "example": "There's surge pricing right now." },
+        { "id": "drop_me", "term": "drop me off near", "cefr": "A2", "tags": ["request"], "example": "Can you drop me off near the plaza?" },
+        { "id": "lost_item", "term": "lost item report", "cefr": "B2", "tags": ["support"], "example": "I filed a lost item report." },
+        { "id": "designated_driver", "term": "designated driver", "cefr": "B1", "tags": ["role"], "example": "Who's the designated driver tonight?" }
+      ]
+    },
+    {
+      "id": "coworking_startup",
+      "label": "Coworking & Startup",
+      "items": [
+        { "id": "pitch_deck", "term": "pitch deck", "cefr": "B2", "tags": ["startup"], "example": "We're finalizing the pitch deck." },
+        { "id": "early_traction", "term": "early traction", "cefr": "B2", "tags": ["growth"], "example": "We have early traction in Europe." },
+        { "id": "burn_rate", "term": "burn rate", "cefr": "C1", "tags": ["finance"], "example": "Our burn rate is sustainable now." },
+        { "id": "shipping_feature", "term": "ship a feature", "cefr": "B1", "tags": ["dev"], "example": "We plan to ship a feature weekly." },
+        { "id": "lean_iteration", "term": "lean iteration", "cefr": "B2", "tags": ["method"], "example": "We rely on lean iteration." }
+      ]
+    },
+    {
+      "id": "shared_apartment",
+      "label": "Shared Apartment / Roommates",
+      "items": [
+        { "id": "cleaning_rota", "term": "cleaning rota", "cefr": "B1", "tags": ["household"], "example": "Let's update the cleaning rota." },
+        { "id": "split_utilities", "term": "split utilities", "cefr": "A2", "tags": ["money"], "example": "We split utilities evenly." },
+        { "id": "quiet_hours", "term": "quiet hours", "cefr": "A2", "tags": ["rule"], "example": "Quiet hours start at ten." },
+        { "id": "leftover_label", "term": "label leftovers", "cefr": "A2", "tags": ["kitchen"], "example": "Please label leftovers." },
+        { "id": "lease_extension", "term": "lease extension", "cefr": "B2", "tags": ["agreement"], "example": "We discussed a lease extension." }
+      ]
+    },
+    {
+      "id": "doctor_visit",
+      "label": "Doctor Visit & Health Admin",
+      "items": [
+        { "id": "appointment_slot", "term": "appointment slot", "cefr": "A2", "tags": ["admin"], "example": "I booked the earliest appointment slot." },
+        { "id": "follow_up", "term": "follow-up", "cefr": "B1", "tags": ["procedure"], "example": "You need a follow-up." },
+        { "id": "mild_reaction", "term": "mild reaction", "cefr": "B2", "tags": ["symptom"], "example": "It was just a mild reaction." },
+        { "id": "pain_scale", "term": "pain scale", "cefr": "B1", "tags": ["assessment"], "example": "Rate it on the pain scale." },
+        { "id": "medical_history", "term": "medical history", "cefr": "B2", "tags": ["record"], "example": "We reviewed his medical history." }
+      ]
+    },
+    {
+      "id": "festival_planning",
+      "label": "Festival & Trip Planning",
+      "items": [
+        { "id": "early_bird", "term": "early-bird ticket", "cefr": "B1", "tags": ["ticket"], "example": "Grab an early-bird ticket." },
+        { "id": "camping_pass", "term": "camping pass", "cefr": "A2", "tags": ["permit"], "example": "We still need a camping pass." },
+        { "id": "lineup_release", "term": "lineup release", "cefr": "B2", "tags": ["event"], "example": "The lineup release is tomorrow." },
+        { "id": "cashless_wristband", "term": "cashless wristband", "cefr": "B2", "tags": ["tech"], "example": "Top up your cashless wristband." },
+        { "id": "ride_share_point", "term": "ride-share point", "cefr": "B1", "tags": ["location"], "example": "Meet at the ride-share point." }
+      ]
+    },
+    {
+      "id": "train_delay",
+      "label": "Train Delay / Travel Hiccup",
+      "items": [
+        { "id": "replacement_service", "term": "replacement service", "cefr": "B1", "tags": ["transport"], "example": "There's a replacement service bus." },
+        { "id": "severe_delay", "term": "severe delay", "cefr": "B1", "tags": ["status"], "example": "We have a severe delay." },
+        { "id": "compensation_claim", "term": "compensation claim", "cefr": "B2", "tags": ["admin"], "example": "File a compensation claim online." },
+        { "id": "platform_change", "term": "platform change", "cefr": "A2", "tags": ["notice"], "example": "Platform change: now track 9." },
+        { "id": "rail_maintenance", "term": "rail maintenance", "cefr": "B2", "tags": ["cause"], "example": "Delays due to rail maintenance." }
+      ]
+    },
+    {
+      "id": "online_collab",
+      "label": "Online Collaboration / Remote Work",
+      "items": [
+        { "id": "screen_share", "term": "screen share", "cefr": "A2", "tags": ["action"], "example": "Can you screen share?" },
+        { "id": "lagging_audio", "term": "lagging audio", "cefr": "B1", "tags": ["issue"], "example": "Your audio is lagging." },
+        { "id": "take_notes", "term": "take minutes", "cefr": "B1", "tags": ["role"], "example": "Can someone take minutes?" },
+        { "id": "async_update", "term": "async update", "cefr": "B2", "tags": ["workflow"], "example": "Post an async update later." },
+        { "id": "action_items", "term": "action items", "cefr": "B1", "tags": ["outcome"], "example": "Let's list action items." }
+      ]
+    },
+    {
+      "id": "conflict_resolution",
+      "label": "Conflict & Repair",
+      "items": [
+        { "id": "miscommunication", "term": "miscommunication", "cefr": "B2", "tags": ["issue"], "example": "It was a miscommunication." },
+        { "id": "own_that", "term": "I own that", "cefr": "B2", "tags": ["accountability"], "example": "I own that mistake." },
+        { "id": "find_common_ground", "term": "find common ground", "cefr": "B2", "tags": ["resolution"], "example": "We need to find common ground." },
+        { "id": "soften_tone", "term": "soften the tone", "cefr": "B2", "tags": ["advice"], "example": "Let's soften the tone of the email." },
+        { "id": "de_escalate", "term": "de‑escalate", "cefr": "C1", "tags": ["strategy"], "example": "We tried to de‑escalate quickly." }
+      ]
+    },
+    {
+      "id": "climate_action",
+      "label": "Climate & Sustainability Action",
+      "items": [
+        { "id": "carbon_footprint", "term": "carbon footprint", "cefr": "B2", "tags": ["environment"], "example": "We audit our carbon footprint." },
+        { "id": "offset_project", "term": "offset project", "cefr": "B2", "tags": ["initiative"], "example": "They invested in an offset project." },
+        { "id": "circular_model", "term": "circular model", "cefr": "C1", "tags": ["concept"], "example": "We're piloting a circular model." },
+        { "id": "greenwashing", "term": "greenwashing", "cefr": "C1", "tags": ["critique"], "example": "They were accused of greenwashing." },
+        { "id": "energy_audit", "term": "energy audit", "cefr": "B2", "tags": ["process"], "example": "An energy audit starts Monday." }
+      ]
+    }
+  ]
+}

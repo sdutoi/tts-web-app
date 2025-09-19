@@ -128,6 +128,12 @@ export default function Home() {
           </a>
         )}
       </div>
+
+      <div className="pt-6">
+        <a href="/story" className="text-indigo-700 underline">
+          Try the Story Assistant →
+        </a>
+      </div>
     </main>
   );
 }

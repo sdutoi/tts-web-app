@@ -1,0 +1,50 @@
+{
+  "$id": "vocab_schema_v2.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Thematic Vocabulary Dataset v2",
+  "type": "object",
+  "required": ["language", "version", "categories"],
+  "properties": {
+    "language": { "type": "string" },
+    "version": { "type": "integer" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "items"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "term", "cefr"],
+              "properties": {
+                "id": { "type": "string" },
+                "term": { "type": "string" },
+                "cefr": { "type": "string", "enum": ["A1","A2","B1","B2","C1","C2"] },
+                "tags": { "type": "array", "items": { "type": "string" } },
+                "example": { "type": "string" },
+                "hint": { "type": "string" },
+                "register": { "type": "string", "enum": ["neutral","casual","polite","formal","slang"], "description": "Relative formality / sociolinguistic register" },
+                "function": { "oneOf": [ { "type": "string" }, { "type": "array", "items": { "type": "string" } } ], "description": "Communicative function(s) (e.g., request, mitigate, hedge)" },
+                "chunkType": { "type": "string", "enum": ["lexeme","multiword","formulaic","collocation"], "description": "Nature of the lexical chunk" },
+                "scenario": { "type": "string", "description": "Canonical scenario id if reused across categories" },
+                "pragmatics": { "type": "string", "description": "Brief pragmatic usage note" },
+                "variations": { "type": "array", "items": { "type": "string" }, "description": "Alternate forms / variants" },
+                "translations": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Map of language code -> translation" },
+                "appliesTo": { "oneOf": [ { "type": "string" }, { "type": "array", "items": { "type": "string" } } ], "description": "Narrow context slots (e.g., greeting, closing, payment)" },
+                "frequency": { "type": "string", "enum": ["high","med","low"], "description": "Rough pedagogical priority" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,41 @@
+{
+  "$id": "vocab_schema_v1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Thematic Vocabulary Dataset v1",
+  "type": "object",
+  "required": ["language", "version", "categories"],
+  "properties": {
+    "language": { "type": "string" },
+    "version": { "type": "integer" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "items"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "term", "cefr"],
+              "properties": {
+                "id": { "type": "string" },
+                "term": { "type": "string" },
+                "cefr": { "type": "string", "enum": ["A1","A2","B1","B2","C1","C2"] },
+                "tags": { "type": "array", "items": { "type": "string" } },
+                "example": { "type": "string" },
+                "hint": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

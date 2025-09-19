@@ -1,0 +1,18 @@
+{
+  "language": "fr",
+  "version": 1,
+  "generatedAt": "2025-09-19T00:00:00Z",
+  "categories": [
+    {
+      "id": "coffee_shop",
+      "label": "Café / Commande",
+      "items": [
+        { "id": "to_go_or_stay", "term": "sur place ou à emporter ?", "cefr": "A2", "example": "C'est pour sur place ou à emporter ?" },
+        { "id": "oat_milk", "term": "lait d'avoine", "cefr": "A2" },
+        { "id": "single_origin", "term": "grains d'origine unique", "cefr": "B2" },
+        { "id": "running_low", "term": "on est presque à court de", "cefr": "B1", "example": "On est presque à court de croissants." },
+        { "id": "tab_open", "term": "laisser l'addition ouverte", "cefr": "B2" }
+      ]
+    }
+  ]
+}

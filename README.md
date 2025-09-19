@@ -11,8 +11,9 @@ This app lets you generate speech audio for English, German, and French using Op
 
 1. Copy the env example and set your key:
 
-	- cp .env.local.example .env.local
-	- Edit .env.local and set OPENAI_API_KEY=...
+  - cp .env.local.example .env.local
+  - Edit .env.local and set OPENAI_API_KEY=...
+  - If your key starts with `sk-proj-` (project-scoped), optionally set `OPENAI_PROJECT_ID` (and `OPENAI_ORG_ID` if applicable).
 
 2. Install dependencies:
 
@@ -40,3 +41,8 @@ Notes on speed: The server may return normal-speed audio; the page applies the c
 ## Deploy
 
 Vercel is recommended. Be sure to set the `OPENAI_API_KEY` environment variable in your Vercel project settings. The API route is configured to run on the Node.js runtime.
+
+## Troubleshooting
+
+- 401 invalid_api_key: Ensure your key is typed correctly and active. If you’re using a project-scoped key (`sk-proj-...`), try also setting `OPENAI_PROJECT_ID` and/or `OPENAI_ORG_ID`. Re-start `npm run dev` after changing env vars.
+- Empty/slow dev start: The first build can take a moment. If it stalls, cancel and re-run `npm run dev`. Ensure Node 18+ is used.

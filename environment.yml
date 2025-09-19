@@ -1,0 +1,8 @@
+name: tts-web
+channels:
+  - conda-forge
+dependencies:
+  - nodejs=20
+  - python=3.11
+  - pip
+  # (Add future python libs here, e.g., numpy, pandas)
