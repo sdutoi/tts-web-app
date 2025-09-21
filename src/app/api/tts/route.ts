@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 export const runtime = "nodejs"; // ensure Node.js runtime on Vercel
 
-type Lang = "en" | "de" | "fr";
+type Lang = "en" | "de" | "fr" | "it" | "es";
 type AudioFormat = "mp3" | "ogg";
 
 type TtsBody = {
@@ -22,16 +22,33 @@ function stableHash(obj: unknown): string {
   return crypto.createHash("sha256").update(json).digest("hex");
 }
 
-function voiceFor(lang: Lang): string {
-  // Map to reasonable OpenAI voices; users can override with `voice`.
+// List of currently supported voices (from provider error message) in preferred order.
+const SUPPORTED_VOICES = [
+  "alloy","echo","fable","onyx","nova","shimmer","coral","verse","ballad","ash","sage","marin","cedar"
+];
+
+function defaultVoiceFor(lang: Lang): string {
   switch (lang) {
     case "de":
-      return "verse"; // example German-capable voice
+      return SUPPORTED_VOICES.includes("verse") ? "verse" : "alloy";
     case "fr":
-      return "aria"; // example French-capable voice
+      return SUPPORTED_VOICES.includes("nova") ? "nova" : "alloy";
+    case "it":
+      return SUPPORTED_VOICES.includes("ballad") ? "ballad" : "alloy";
+    case "es":
+      return SUPPORTED_VOICES.includes("ash") ? "ash" : "alloy";
     default:
-      return "alloy"; // English default
+      return "alloy";
   }
+}
+
+function sanitizeVoice(v: string | undefined, lang: Lang): { voice: string; fallback: boolean } {
+  if (v && SUPPORTED_VOICES.includes(v)) return { voice: v, fallback: false };
+  // Attempt language default
+  const def = defaultVoiceFor(lang);
+  if (SUPPORTED_VOICES.includes(def)) return { voice: def, fallback: true };
+  // Ultimate fallback first in list
+  return { voice: SUPPORTED_VOICES[0], fallback: true };
 }
 
 function mimeFor(format: AudioFormat): string {
@@ -66,8 +83,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const chosenVoice = voice ?? voiceFor(lang);
-    const key = stableHash({ text, lang, speed, format, voice: chosenVoice });
+  const { voice: safeVoice, fallback: voiceFallback } = sanitizeVoice(voice, lang);
+  const chosenVoice = safeVoice; // canonical variable name
+  const key = stableHash({ text, lang, speed, format, voice: chosenVoice });
 
     const cached = cache.get(key);
     if (cached) {
@@ -90,8 +108,6 @@ export async function POST(req: NextRequest) {
       input: text,
       voice: chosenVoice,
       format,
-      // Some SDKs expose 'speed' directly; if not, we return normal speed and let client adjust playbackRate.
-      // Include speed as a hint for future models; ignored by current API if unsupported.
       speed,
     } as Record<string, unknown>;
 
@@ -149,19 +165,26 @@ export async function POST(req: NextRequest) {
     const resp = await callWithRetry(3);
 
     if (!resp.ok) {
-      const errText = await resp.text();
-      // Redact any instance of the API key and generic sk-... tokens before logging
-      const redact = (s: string) =>
-        s
-          .replaceAll(apiKey, "[REDACTED]")
-          .replace(/sk-[a-zA-Z0-9_-]{10,}/g, "[REDACTED]");
-      console.error("OpenAI TTS error", resp.status, redact(errText));
+      const raw = await resp.text();
+      const sanitize = (s: string) => s
+        .replaceAll(apiKey, "[REDACTED]")
+        .replace(/sk-[a-zA-Z0-9_-]{10,}/g, "[REDACTED]");
+  let upstream: unknown = null;
+  try { upstream = JSON.parse(raw); } catch { upstream = { message: raw.slice(0, 400) }; }
+      console.error("OpenAI TTS error", resp.status, sanitize(raw));
 
-      // Return a generic error to the client without upstream details
-      return new Response(
-        JSON.stringify({ error: "TTS provider error", status: resp.status }),
-        { status: 502, headers: { "Content-Type": "application/json" } }
-      );
+      const isAuth = resp.status === 401 || resp.status === 403;
+      let providerMessage: string | null = null;
+      if (upstream && typeof upstream === "object") {
+        const u = upstream as { error?: { message?: string }; message?: string };
+        providerMessage = u.error?.message || u.message || null;
+      }
+      const clientPayload = {
+        error: isAuth ? "Authentication/authorization failed" : "TTS provider error",
+        providerStatus: resp.status,
+        providerMessage,
+      };
+      return new Response(JSON.stringify(clientPayload), { status: isAuth ? 401 : 502, headers: { "Content-Type": "application/json" } });
     }
 
     const arrayBuf = await resp.arrayBuffer();
@@ -173,6 +196,8 @@ export async function POST(req: NextRequest) {
         "Content-Disposition": `inline; filename=tts.${format}`,
         "Cache-Control": "no-store",
         "X-Cache": "MISS",
+        "X-Voice-Selected": chosenVoice,
+        ...(voiceFallback ? { "X-Voice-Fallback": "1" } : {}),
       },
     });
   } catch (e) {

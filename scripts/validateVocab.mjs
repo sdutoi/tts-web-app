@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,6 +23,7 @@ try {
 }
 
 const ajv = new Ajv({ allErrors: true, strict: true });
+addFormats(ajv); // enable date-time format used by generatedAt
 const validate = ajv.compile(schema);
 
 // Collect vocab files
@@ -33,7 +35,7 @@ if (vocabFiles.length === 0) {
 }
 
 let hadError = false;
-const globalIds = new Set();
+const globalIds = new Set(); // track language+id composite
 
 for (const file of vocabFiles) {
   const full = join(dataDir, file);
@@ -59,10 +61,10 @@ for (const file of vocabFiles) {
   if (json?.categories) {
     for (const cat of json.categories) {
       for (const item of cat.items || []) {
-        const composite = item.id;
+        const composite = `${json.language || '??'}::${item.id}`;
         if (globalIds.has(composite)) {
           hadError = true;
-          process.stderr.write(`Duplicate item id detected: ${composite} in file ${file}\n`);
+          process.stderr.write(`Duplicate item id detected (same language & id): ${composite} in file ${file}\n`);
         } else {
           globalIds.add(composite);
         }

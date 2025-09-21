@@ -64,9 +64,12 @@ async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Pro
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = (process.env.OPENAI_API_KEY || "").trim();
+  const rawKey = process.env.OPENAI_API_KEY || "";
+  const apiKey = rawKey.trim();
   const project = process.env.OPENAI_PROJECT_ID?.trim();
   const org = process.env.OPENAI_ORG_ID?.trim();
+  const keyFingerprint = apiKey ? `${apiKey.slice(0,4)}...${apiKey.slice(-4)}` : 'NONE';
+  console.log('[dialogue] env check', { keyPresent: !!apiKey, keyLength: apiKey.length, keyFingerprint, projectPresent: !!project, orgPresent: !!org });
   if (!apiKey) {
     return new Response(JSON.stringify({ error: "Missing OPENAI_API_KEY" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
@@ -136,15 +139,35 @@ Requirements:
   } as const;
 
   let resp: Response;
+  let altStatus: number | null = null;
   try {
     resp = await fetchWithRetry(url, { method: "POST", headers, body: JSON.stringify(payload) });
   } catch {
     return new Response(JSON.stringify({ error: "Upstream request failed" }), { status: 502, headers: { "Content-Type": "application/json" } });
   }
+  if (!resp.ok && (resp.status === 401 || resp.status === 405) && project) {
+    const headersNoProject = { ...headers };
+    delete headersNoProject['OpenAI-Project'];
+    const alt = await fetch(url, { method: 'POST', headers: headersNoProject, body: JSON.stringify(payload) });
+    altStatus = alt.status;
+    if (alt.ok) {
+      resp = alt;
+    }
+  }
+  // If still 401 invalid_api_key, attempt Responses API as a differential test
+  if (!resp.ok && resp.status === 401) {
+    try {
+      const r2 = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers, body: JSON.stringify({ model: "gpt-4o-mini", input: "diag dialogue fallback" }) });
+      const t2 = await r2.text();
+      return new Response(JSON.stringify({ error: "Dialogue provider error", status: resp.status, responsesStatus: r2.status, responsesBody: t2.slice(0,200) }), { status: 502, headers: { "Content-Type": "application/json" } });
+    } catch {
+      // ignore and fall through
+    }
+  }
   if (!resp.ok) {
     const text = await resp.text();
     console.error("Dialogue API error", resp.status, redact(text, apiKey));
-    return new Response(JSON.stringify({ error: "Dialogue provider error", status: resp.status }), { status: 502, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Dialogue provider error", status: resp.status, altStatus }), { status: 502, headers: { "Content-Type": "application/json" } });
   }
   const data = await resp.json();
   const content: string = data?.choices?.[0]?.message?.content ?? "";

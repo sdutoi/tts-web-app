@@ -123,6 +123,14 @@ export async function POST(req: NextRequest) {
   if (!resp.ok) {
     const text = await resp.text();
     console.error("Story API error", resp.status, redact(text, apiKey));
+    if (resp.status === 401) {
+      // Try responses API for diagnostic
+      try {
+        const r2 = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers, body: JSON.stringify({ model: "gpt-4o-mini", input: "diag story fallback" }) });
+        const t2 = await r2.text();
+        return new Response(JSON.stringify({ error: "Story provider error", status: resp.status, responsesStatus: r2.status, responsesBody: t2.slice(0,200) }), { status: 502, headers: { "Content-Type": "application/json" } });
+      } catch {/* ignore */}
+    }
     return new Response(JSON.stringify({ error: "Story provider error", status: resp.status }), {
       status: 502,
       headers: { "Content-Type": "application/json" },

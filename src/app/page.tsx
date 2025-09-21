@@ -1,139 +1,111 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-type Lang = "en" | "de" | "fr";
-type AudioFormat = "mp3" | "ogg";
+type Lang = "en" | "de" | "fr" | "it" | "es";
+
+interface LevelSentence { level: string; text: string; }
+
+const SENTENCE_BANK: Record<Lang, LevelSentence[]> = {
+  en: [
+    { level: "A1", text: "Hello, how are you today?" },
+    { level: "A2", text: "I usually take the bus to work in the morning." },
+    { level: "B1", text: "Learning regularly helps me build confidence in conversations." },
+    { level: "B2", text: "She outlined several compelling reasons to reconsider the plan." },
+    { level: "C1", text: "Balancing clarity with nuance is essential in persuasive writing." },
+  ],
+  de: [
+    { level: "A1", text: "Guten Morgen! Wie geht es dir?" },
+    { level: "A2", text: "Am Wochenende besuche ich oft meine Freunde." },
+    { level: "B1", text: "Regelmäßiges Üben macht mich beim Sprechen viel sicherer." },
+    { level: "B2", text: "Er erklärte die Situation ausführlich und sehr überzeugend." },
+    { level: "C1", text: "Zwischen den Zeilen erkennt man die eigentliche Absicht des Autors." },
+  ],
+  fr: [
+    { level: "A1", text: "Bonjour, tu vas bien ?" },
+    { level: "A2", text: "Le soir, je prépare un dîner simple pour ma famille." },
+    { level: "B1", text: "Pratiquer un peu chaque jour améliore vraiment ma fluidité." },
+    { level: "B2", text: "Elle a présenté un argument solide et nuancé." },
+    { level: "C1", text: "La subtilité des expressions enrichit la compréhension du texte." },
+  ],
+  it: [
+    { level: "A1", text: "Ciao! Come stai oggi?" },
+    { level: "A2", text: "La sera guardo spesso un film con mia sorella." },
+    { level: "B1", text: "Studiare con costanza rende le conversazioni più naturali." },
+    { level: "B2", text: "Ha descritto la situazione in modo chiaro e convincente." },
+    { level: "C1", text: "Cogliere le sfumature linguistiche richiede attenzione continua." },
+  ],
+  es: [
+    { level: "A1", text: "¡Hola! ¿Cómo estás hoy?" },
+    { level: "A2", text: "Por la tarde suelo caminar con mi perro." },
+    { level: "B1", text: "Practicar a diario hace que hablar sea más sencillo." },
+    { level: "B2", text: "Explicó la situación con detalle y mucha claridad." },
+    { level: "C1", text: "Interpretar los matices depende del contexto y la intención." },
+  ],
+};
 
 export default function Home() {
-  const [text, setText] = useState(
-    "Guten Tag! Willkommen zu unserem kleinen Sprachlernprojekt."
-  );
-  const [lang, setLang] = useState<Lang>("de");
-  const [speed, setSpeed] = useState(0.8);
-  const [format, setFormat] = useState<AudioFormat>("mp3");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [stage, setStage] = useState<"language" | "level">("language");
+  const [language, setLanguage] = useState<Lang | null>(null);
+  const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setAudioUrl(null);
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, lang, speed, format }),
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t);
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setAudioUrl(url);
-      if (audioRef.current) {
-        audioRef.current.src = url;
-        audioRef.current.playbackRate = speed; // reflect chosen speed in-browser
-        if ("preservesPitch" in audioRef.current) {
-          audioRef.current.preservesPitch = true;
-        }
-        await audioRef.current.play().catch(() => undefined);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+  function pickLanguage(l: Lang) {
+    setLanguage(l);
+    setStage("level");
+  }
+
+  function chooseSentence(s: LevelSentence) {
+    // Navigate to dialogue page with selected lang + level + seed sentence
+    const url = new URL(window.location.origin + "/dialogue");
+    url.searchParams.set("lang", language!);
+    url.searchParams.set("level", s.level);
+    url.searchParams.set("seed", s.text);
+    router.push(url.pathname + "?" + url.searchParams.toString());
   }
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Language TTS (EN/DE/FR)</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={5}
-          className="w-full border rounded p-3"
-          placeholder="Type the text to synthesize"
-          required
-        />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <label className="flex items-center gap-2">
-            <span className="w-20">Language</span>
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as Lang)}
-              className="border rounded p-2 flex-1"
-            >
-              <option value="en">English</option>
-              <option value="de">German</option>
-              <option value="fr">French</option>
-            </select>
-          </label>
-          <label className="flex items-center gap-2">
-            <span className="w-20">Speed</span>
-            <input
-              type="range"
-              min={0.5}
-              max={1.25}
-              step={0.05}
-              value={speed}
-              onChange={(e) => setSpeed(parseFloat(e.target.value))}
-              className="flex-1"
-            />
-            <span className="tabular-nums w-12 text-right">
-              {speed.toFixed(2)}x
-            </span>
-          </label>
-          <label className="flex items-center gap-2">
-            <span className="w-20">Format</span>
-            <select
-              value={format}
-              onChange={(e) => setFormat(e.target.value as AudioFormat)}
-              className="border rounded p-2 flex-1"
-            >
-              <option value="mp3">MP3</option>
-              <option value="ogg">OGG Opus</option>
-            </select>
-          </label>
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-          disabled={loading}
-        >
-          {loading ? "Synthesizing…" : "Create audio"}
-        </button>
-      </form>
+    <main className="max-w-3xl mx-auto p-6 space-y-8">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight">Practice Dialogues</h1>
+  <p className="text-gray-600 text-sm leading-relaxed">Select your target language, then pick a sample sentence that best matches your current comfort level. We&apos;ll use that to jump you straight into the dialogue builder.</p>
+      </header>
 
-      {error && (
-        <div className="text-red-600 text-sm whitespace-pre-wrap">{error}</div>
+      {stage === "language" && (
+        <section className="grid sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {(["en","fr","de","it","es"] as Lang[]).map(l => (
+            <button key={l} onClick={()=>pickLanguage(l)} className="border rounded-lg p-4 hover:border-indigo-500 flex flex-col items-center gap-2 bg-white shadow-sm">
+              <span className="text-lg font-medium uppercase">{l}</span>
+              <span className="text-xs tracking-wide text-gray-600">{l === 'en' ? 'English' : l === 'fr' ? 'Français' : l === 'de' ? 'Deutsch' : l === 'it' ? 'Italiano' : 'Español'}</span>
+            </button>
+          ))}
+        </section>
       )}
 
-      <div className="space-y-2">
-        <audio ref={audioRef} controls className="w-full" />
-        {audioUrl && (
-          <a
-            href={audioUrl}
-            download={`tts.${format}`}
-            className="text-blue-700 underline"
-          >
-            Download audio
-          </a>
-        )}
-      </div>
+      {stage === "level" && language && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Pick a representative sentence</h2>
+            <button className="text-sm text-indigo-600 underline" onClick={()=>{ setStage("language"); setLanguage(null); }}>Change language</button>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {SENTENCE_BANK[language].map(s => (
+              <button key={s.level} onClick={()=>chooseSentence(s)} className="text-left border rounded p-4 bg-white hover:border-indigo-500 shadow-sm space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">Level {s.level}</span>
+                </div>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{s.text}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
-      <div className="pt-6">
-        <a href="/story" className="text-indigo-700 underline">
-          Try the Story Assistant →
-        </a>
-      </div>
+      <footer className="pt-8 text-sm text-gray-500 flex flex-wrap gap-4">
+        <a className="underline" href="/story">Story Assistant</a>
+        <a className="underline" href="/dialogue">Dialogue Builder (manual)</a>
+        <a className="underline" href="https://" target="_blank" rel="noreferrer">Docs</a>
+      </footer>
     </main>
   );
 }
