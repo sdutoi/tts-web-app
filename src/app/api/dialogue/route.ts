@@ -9,6 +9,7 @@ interface DialogueBody {
   level: Level;              // CEFR target level
   scenarioId?: string;       // scenario / category id (optional, helps context)
   itemIds: string[];         // vocab item IDs to incorporate
+  customWords?: string[];    // free-form user-supplied words/phrases (may not have IDs)
   turns?: number;            // desired number of dialogue turns (speaker exchanges)
   style?: string;            // optional style (friendly, formal, tense, etc.)
   instructions?: string;     // extra user guidance
@@ -29,6 +30,43 @@ interface DialogueResponse {
   turns: DialogueTurn[];
   usedItems: string[];      // all item IDs actually used
   notes?: string;           // pedagogy / strategy notes
+}
+
+// Map language codes to display names for clearer prompts
+const LANGUAGE_NAMES: Record<string,string> = {
+  en: "English",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  es: "Spanish",
+};
+
+// Very lightweight bag-of-words heuristic language detector across supported set
+function detectLangHeuristic(text: string): string | null {
+  const samples = text.toLowerCase();
+  const markers: Record<string,string[]> = {
+    en: ["the ","and ","you ","with","have","are"],
+    fr: [" le "," la "," les "," est "," avec "," pour "," je "," tu "],
+    de: [" der "," die "," und "," ist "," mit "," ich "," nicht"],
+    it: [" il "," lo "," la "," che "," per "," con "," sono "," vuoi "," grazie"],
+    es: [" el "," la "," los "," las "," con "," para "," eres "," quiero"],
+  };
+  const scores: Record<string, number> = {};
+  for (const [lang, words] of Object.entries(markers)) {
+    scores[lang] = 0;
+    for (const w of words) {
+      const count = samples.split(w).length - 1;
+      scores[lang] += count;
+    }
+  }
+  // Pick highest non-zero score
+  let best: string | null = null;
+  let bestScore = 0;
+  for (const [lang, sc] of Object.entries(scores)) {
+    if (sc > bestScore) { best = lang; bestScore = sc; }
+  }
+  if (bestScore === 0) return null;
+  return best;
 }
 
 function redact(s: string, key: string) {
@@ -81,28 +119,37 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
-  const { lang, level, scenarioId = "generic", itemIds, turns = 8, style = "", instructions = "", action = "generate", previousDialogue } = body;
-  if (!lang || !level || !Array.isArray(itemIds) || itemIds.length === 0) {
+  const { lang, level, scenarioId = "generic", itemIds, customWords = [], turns = 8, style = "", instructions = "", action = "generate", previousDialogue } = body;
+  if (!lang || !level || (!Array.isArray(itemIds))) {
     return new Response(JSON.stringify({ error: "Missing required fields: lang, level, itemIds[]" }), { status: 400, headers: { "Content-Type": "application/json" } });
+  }
+  if (itemIds.length === 0 && customWords.length === 0) {
+    return new Response(JSON.stringify({ error: "Provide at least one vocabulary item or a custom word." }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
   if (action === "refine" && !previousDialogue) {
     return new Response(JSON.stringify({ error: "previousDialogue required for refine" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   // System prompt: define JSON output contract
+  const langName = LANGUAGE_NAMES[lang] || lang;
   const sys = `You are a helpful language teaching assistant generating short pedagogically-focused dialogues.
-Requirements:
-- Target language: ${lang}
+Requirements (STRICT):
+- ABSOLUTE TARGET LANGUAGE FOR *ALL* dialogue text (except optional English gloss field): ${lang} (${langName})
 - CEFR level: ${level}
 - Use ONLY the provided vocabulary item IDs when referencing them; do not invent new IDs.
-- Output strict JSON matching this TypeScript interface:
+- Output strict JSON matching this TypeScript interface (and NOTHING else):
   interface DialogueResponse { scenario: string; level: string; turns: { speaker: string; text: string; vocabRefs: string[]; translation_en?: string; }[]; usedItems: string[]; notes?: string; }
 - Each turn must list the subset of item IDs used in that turn in vocabRefs (empty array if none).
 - Keep dialogue natural, coherent, and level-appropriate.
-- Sprinkle items across turns (avoid front-loading all items).
+- Distribute vocab items across turns (avoid clustering all items early).
 - Provide 6-${Math.max(6, Math.min(18, turns))} turns unless user asked otherwise.
 - If style provided, reflect it subtly (not exaggerated).
 - Provide concise notes highlighting teaching focus (max 160 chars).
+- ADAPT / TRANSLATE learner-supplied free words, style descriptors, and extra instruction phrases into the target language so the dialogue contains NO unexplained foreign-language fragments. Accept only:
+    * Proper nouns (e.g., Berlin, Netflix) or widely accepted international loanwords.
+    * If a custom word is from another language, convert it to the most natural ${langName} equivalent (e.g., foreign word → appropriate ${langName} term).
+- Do NOT leave raw untranslated foreign tokens (avoid code-switching) unless proper nouns.
+- Before finalizing JSON, self-check that no turn text contains obvious markers of another language (e.g., for French: 'le ', 'avec'; for German: ' der ', ' und '; etc.) unless those are legitimate proper nouns inside ${langName} context.
 - Do not include any explanation outside the JSON.`;
 
   const userParts: string[] = [];
@@ -116,9 +163,14 @@ Requirements:
   userParts.push(`Target number of turns: ${turns}`);
   if (style) userParts.push(`Desired style: ${style}`);
   if (instructions) userParts.push(`Extra instructions: ${instructions}`);
-  userParts.push("Vocab item IDs (must distribute them naturally):\n" + itemIds.join(", "));
+  userParts.push("Vocab item IDs (must distribute them naturally):\n" + (itemIds.length? itemIds.join(", ") : "<none>"));
+  if (customWords.length) {
+    userParts.push("Learner-supplied free words/phrases (MUST be naturally incorporated AFTER adaptation into the target language; translate or morph them as needed; do NOT invent IDs):\n" + customWords.join(", "));
+  }
+  // Reinforce adaptation rule explicitly at end of user message.
+  userParts.push("IMPORTANT: Ensure every learner-supplied word or phrase appears in fully adapted target-language form (unless proper noun). No mixed-language code-switching.");
 
-  const messages = [
+  let messages = [
     { role: "system", content: sys },
     { role: "user", content: userParts.join("\n\n") }
   ];
@@ -170,15 +222,41 @@ Requirements:
     return new Response(JSON.stringify({ error: "Dialogue provider error", status: resp.status, altStatus }), { status: 502, headers: { "Content-Type": "application/json" } });
   }
   const data = await resp.json();
-  const content: string = data?.choices?.[0]?.message?.content ?? "";
+  let content: string = data?.choices?.[0]?.message?.content ?? "";
   if (!content) {
     return new Response(JSON.stringify({ error: "Empty response from model" }), { status: 502, headers: { "Content-Type": "application/json" } });
   }
 
   try {
-    const parsed = JSON.parse(content) as DialogueResponse;
-    // Lightweight validation of required keys
+    let parsed = JSON.parse(content) as DialogueResponse;
     if (!parsed.turns || !Array.isArray(parsed.turns)) throw new Error("turns missing");
+    // Heuristic language enforcement: if mismatch, attempt single corrective regeneration
+    const combined = parsed.turns.map(t=>t.text).join("\n");
+    const detected = detectLangHeuristic(combined);
+    if (detected && detected !== lang) {
+      console.warn(`[dialogue] Language mismatch detected. target=${lang} detected=${detected}. Retrying once with corrective instruction.`);
+      messages = [
+        { role: 'system', content: sys },
+        { role: 'user', content: userParts.join("\n\n") },
+        { role: 'user', content: `Your previous draft response was mostly in ${LANGUAGE_NAMES[detected] || detected}, but the required target language is ${lang} (${langName}). Regenerate the ENTIRE dialogue strictly in ${langName}, preserving pedagogical intent and vocabulary IDs. Output ONLY valid JSON again.` }
+      ];
+      try {
+        const retryPayload = { model: 'gpt-4o-mini', messages, temperature: 0.55, response_format: { type: 'json_object' } } as const;
+        resp = await fetchWithRetry(url, { method: 'POST', headers, body: JSON.stringify(retryPayload) });
+        if (resp.ok) {
+          const retryData = await resp.json();
+            content = retryData?.choices?.[0]?.message?.content ?? content;
+            try {
+              const reparsed = JSON.parse(content) as DialogueResponse;
+              if (reparsed.turns && Array.isArray(reparsed.turns)) {
+                parsed = reparsed;
+              }
+            } catch {/* keep original parsed if reparsing fails */}
+        }
+      } catch (e) {
+        console.warn('Retry after mismatch failed', e);
+      }
+    }
     return new Response(JSON.stringify(parsed), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch {
     // Fallback: wrap raw text (not ideal, but prevents total failure)

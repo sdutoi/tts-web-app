@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from '../i18n/I18nProvider';
+import { LanguageToggle } from '../components/LanguageToggle';
 
 type Lang = "en" | "de" | "fr" | "it" | "es";
 
@@ -46,6 +48,7 @@ const SENTENCE_BANK: Record<Lang, LevelSentence[]> = {
 };
 
 export default function Home() {
+  const { t } = useI18n();
   const [stage, setStage] = useState<"language" | "level">("language");
   const [language, setLanguage] = useState<Lang | null>(null);
   const router = useRouter();
@@ -65,10 +68,11 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-8">
+    <main className="max-w-3xl mx-auto p-6 space-y-8 relative">
+      <div className="absolute top-4 right-4"><LanguageToggle /></div>
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Practice Dialogues</h1>
-  <p className="text-gray-600 text-sm leading-relaxed">Select your target language, then pick a sample sentence that best matches your current comfort level. We&apos;ll use that to jump you straight into the dialogue builder.</p>
+        <h1 className="text-3xl font-semibold tracking-tight">{t('landing.title')}</h1>
+        <p className="text-gray-600 text-sm leading-relaxed">{t('landing.subtitle')}</p>
       </header>
 
       {stage === "language" && (
@@ -85,8 +89,8 @@ export default function Home() {
       {stage === "level" && language && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Pick a representative sentence</h2>
-            <button className="text-sm text-indigo-600 underline" onClick={()=>{ setStage("language"); setLanguage(null); }}>Change language</button>
+            <h2 className="text-xl font-semibold">{t('landing.pickSentence')}</h2>
+            <button className="text-sm text-indigo-600 underline" onClick={()=>{ setStage("language"); setLanguage(null); }}>{t('landing.changeLanguage')}</button>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             {SENTENCE_BANK[language].map(s => (
@@ -102,9 +106,9 @@ export default function Home() {
       )}
 
       <footer className="pt-8 text-sm text-gray-500 flex flex-wrap gap-4">
-        <a className="underline" href="/story">Story Assistant</a>
-        <a className="underline" href="/dialogue">Dialogue Builder (manual)</a>
-        <a className="underline" href="https://" target="_blank" rel="noreferrer">Docs</a>
+        <a className="underline" href="/story">{t('footer.storyAssistant')}</a>
+        <a className="underline" href="/dialogue">{t('footer.dialogueBuilder')}</a>
+        <a className="underline" href="https://" target="_blank" rel="noreferrer">{t('footer.docs')}</a>
       </footer>
     </main>
   );
