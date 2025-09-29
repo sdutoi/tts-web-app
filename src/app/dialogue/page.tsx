@@ -79,8 +79,7 @@ function DialogueBuilderInner() {
   const [voiceB, setVoiceB] = useState<string>(()=> (VOICE_CANDIDATES["en"] || VOICE_CANDIDATES.default)[1]);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
-  const [dragOverA, setDragOverA] = useState(false);
-  const [dragOverB, setDragOverB] = useState(false);
+  // Drag-and-drop removed in favor of dropdowns for mobile usability
   const [showTranslateModal, setShowTranslateModal] = useState(false);
   const [translateLoading, setTranslateLoading] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
@@ -800,38 +799,47 @@ function DialogueBuilderInner() {
             </div>
             <p className="text-sm text-gray-600">{t('dialogue.chooseVoicesDescription')}</p>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div
-                onDragOver={(e)=> { e.preventDefault(); setDragOverA(true); }}
-                onDragLeave={()=> setDragOverA(false)}
-                onDrop={(e)=> {
-                  e.preventDefault();
-                  setDragOverA(false);
-                  const v = e.dataTransfer.getData('text/voice');
-                  if (!v) return;
-                  if (voiceB === v) { setVoiceB(voiceA); }
-                  setVoiceA(v);
-                }}
-                className={`relative rounded border-2 p-4 h-24 flex flex-col items-center justify-center text-center transition ${dragOverA ? 'border-indigo-500 bg-indigo-50' : 'border-dashed border-gray-300 bg-gray-50'}`}
-              >
-                <div className="text-xs uppercase tracking-wide font-semibold text-gray-600 mb-1">{t('dialogue.speakerA')}</div>
-                <div className="font-bold text-sm">{voiceA || <span className="italic text-gray-500">{t('dialogue.dragVoiceHere')}</span>}</div>
-              </div>
-              <div
-                onDragOver={(e)=> { e.preventDefault(); setDragOverB(true); }}
-                onDragLeave={()=> setDragOverB(false)}
-                onDrop={(e)=> {
-                  e.preventDefault();
-                  setDragOverB(false);
-                  const v = e.dataTransfer.getData('text/voice');
-                  if (!v) return;
-                  if (voiceA === v) { setVoiceA(voiceB); }
-                  setVoiceB(v);
-                }}
-                className={`relative rounded border-2 p-4 h-24 flex flex-col items-center justify-center text-center transition ${dragOverB ? 'border-indigo-500 bg-indigo-50' : 'border-dashed border-gray-300 bg-gray-50'}`}
-              >
-                <div className="text-xs uppercase tracking-wide font-semibold text-gray-600 mb-1">{t('dialogue.speakerB')}</div>
-                <div className="font-bold text-sm">{voiceB || <span className="italic text-gray-500">{t('dialogue.dragVoiceHere')}</span>}</div>
-              </div>
+              <label className="text-sm">
+                <div className="mb-1 text-xs uppercase tracking-wide font-semibold text-gray-600">{t('dialogue.speakerA')}</div>
+                <select
+                  className="w-full border rounded p-2 bg-white"
+                  value={voiceA}
+                  onChange={(e)=>{
+                    const v = e.target.value;
+                    if (v === voiceB) {
+                      // pick a different B automatically
+                      const list = VOICE_CANDIDATES[lang] || VOICE_CANDIDATES.default;
+                      const alt = list.find(x=> x !== v) || v;
+                      setVoiceB(alt);
+                    }
+                    setVoiceA(v);
+                  }}
+                >
+                  {(VOICE_CANDIDATES[lang] || VOICE_CANDIDATES.default).map(vc=> (
+                    <option key={vc} value={vc}>{vc}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm">
+                <div className="mb-1 text-xs uppercase tracking-wide font-semibold text-gray-600">{t('dialogue.speakerB')}</div>
+                <select
+                  className="w-full border rounded p-2 bg-white"
+                  value={voiceB}
+                  onChange={(e)=>{
+                    const v = e.target.value;
+                    if (v === voiceA) {
+                      const list = VOICE_CANDIDATES[lang] || VOICE_CANDIDATES.default;
+                      const alt = list.find(x=> x !== v) || v;
+                      setVoiceA(alt);
+                    }
+                    setVoiceB(v);
+                  }}
+                >
+                  {(VOICE_CANDIDATES[lang] || VOICE_CANDIDATES.default).map(vc=> (
+                    <option key={vc} value={vc}>{vc}</option>
+                  ))}
+                </select>
+              </label>
             </div>
             <div className="text-xs text-gray-500">{t('dialogue.chooseVoicesDescription')}</div>
             <div className="flex flex-wrap gap-2">
@@ -841,11 +849,6 @@ function DialogueBuilderInner() {
                   <button
                     key={vc}
                     type="button"
-                    draggable
-                    onDragStart={(e)=> {
-                      e.dataTransfer.setData('text/voice', vc);
-                      e.dataTransfer.effectAllowed = 'move';
-                    }}
                     onClick={async ()=> {
                       try {
                         setVoiceError(null);
