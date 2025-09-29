@@ -1,6 +1,6 @@
 {
   "language": "de",
-  "version": 2,
+  "version": 3,
   "generatedAt": "2025-09-21T00:00:00Z",
   "categories": [
     {
@@ -15,72 +15,46 @@
         { "id": "house_blend", "term": "Hausmischung", "cefr": "A2", "tags": ["subst"], "example": "Was ist in eurer Hausmischung?" },
         { "id": "extra_shot", "term": "Extra-Shot", "cefr": "A2", "tags": ["bestellung"], "example": "Bitte einen Extra-Shot." },
         { "id": "brew_method", "term": "Brühmethode", "cefr": "B1", "tags": ["prozess"], "example": "Welche Brühmethode nutzt ihr?" },
-        { "id": "foam_level", "term": "Schaumhöhe", "cefr": "B1", "tags": ["beschreibung"], "example": "Kannst du die Schaumhöhe reduzieren?" },
-        { "id": "seasonal_special", "term": "Saisonspecial", "cefr": "A2", "tags": ["promotion"], "example": "Was ist das Saisonspecial?" },
-        { "id": "refill", "term": "Nachfüllen", "cefr": "A1", "tags": ["verb","subst"], "example": "Kann ich nachfüllen?" },
+  { "id": "foam_level", "term": "Schaummenge", "cefr": "B1", "tags": ["beschreibung"], "example": "Kannst du die Schaum­menge reduzieren?" },
+  { "id": "seasonal_special", "term": "Saison-Special", "cefr": "A2", "tags": ["promotion"], "example": "Was ist das Saison-Special?" },
+  { "id": "refill", "term": "nachschenken (Refill)", "cefr": "A2", "tags": ["verb","subst"], "example": "Kannst du noch etwas nachschenken?" },
         { "id": "light_roast", "term": "helle Röstung", "cefr": "A2", "tags": ["beschreibung"], "example": "Ich mag eine helle Röstung." },
         { "id": "dark_roast", "term": "dunkle Röstung", "cefr": "A2", "tags": ["beschreibung"], "example": "Habt ihr Filter mit dunkler Röstung?" },
         { "id": "grind_size", "term": "Mahlgrad", "cefr": "B2", "tags": ["parameter"], "example": "Bitte den Mahlgrad etwas feiner." },
-        { "id": "decaf_option", "term": "entkoffeinierte Option", "cefr": "A2", "tags": ["subst"], "example": "Gibt es eine entkoffeinierte Option?" },
+  { "id": "decaf_option", "term": "entkoffeinierte Variante", "cefr": "A2", "tags": ["subst"], "example": "Gibt es eine entkoffeinierte Variante?" },
         { "id": "syrup_pump", "term": "Siruppumpe", "cefr": "B1", "tags": ["menge"], "example": "Nur zwei Siruppumpen." },
         { "id": "comp_drink", "term": "kostenloses Getränk", "cefr": "C1", "tags": ["service"], "example": "Sie boten ein kostenloses Getränk nach der Verzögerung an.", "hint": "als Entgegenkommen" },
         { "id": "queue_number", "term": "Bestellnummer", "cefr": "A1", "tags": ["admin"], "example": "Meine Bestellnummer ist 42." },
         { "id": "beans_freshly_roasted", "term": "frisch geröstete Bohnen", "cefr": "B2", "tags": ["qualität"], "example": "Wir nutzen nur frisch geröstete Bohnen." },
-        { "id": "temperature_okay", "term": "Passt die Temperatur?", "cefr": "A2", "tags": ["frage"], "example": "Passt die Temperatur oder zu heiß?" }
-      ]
-    },
-    {
+                        { "id": "temperature_okay", "term": "Ist die Temperatur okay?", "cefr": "A2", "tags": ["frage"], "example": "Ist die Temperatur okay oder zu heiß?" }
+                  ]
+            },
+            {
       "id": "rideshare_night_out",
       "label": "Ride-Sharing & Ausgehen",
       "items": [
         { "id": "shared_ride", "term": "geteilte Fahrt", "cefr": "A1", "tags": ["noun_phrase"], "example": "Ich habe eine geteilte Fahrt gebucht." },
         { "id": "surge_pricing", "term": "Hochpreisphase", "cefr": "B1", "tags": ["markt"], "example": "Gerade ist Hochpreisphase." },
-        { "id": "drop_me", "term": "mich absetzen nahe", "cefr": "A2", "tags": ["bitte"], "example": "Können Sie mich nahe dem Platz absetzen?" },
-        { "id": "lost_item", "term": "Fundmeldung", "cefr": "B2", "tags": ["support"], "example": "Ich habe eine Fundmeldung eingereicht." },
-        { "id": "designated_driver", "term": "Fahrer der nüchtern bleibt", "cefr": "A2", "tags": ["rolle"], "example": "Wer ist heute der Fahrer der nüchtern bleibt?" },
-        { "id": "pickup_eta", "term": "Abhol-ETA", "cefr": "B1", "tags": ["zeit"], "example": "Wie ist die Abhol-ETA?" },
+  { "id": "drop_me", "term": "mich in der Nähe absetzen", "cefr": "A2", "tags": ["bitte"], "example": "Können Sie mich in der Nähe vom Platz absetzen?" },
+  { "id": "lost_item", "term": "verlorener Gegenstand", "cefr": "B1", "tags": ["support"], "example": "Ich habe einen verlorenen Gegenstand gemeldet." },
+  { "id": "designated_driver", "term": "nüchterner Fahrer", "cefr": "A2", "tags": ["rolle"], "example": "Wer ist heute der nüchterne Fahrer?" },
+  { "id": "pickup_eta", "term": "Abholzeit (ETA)", "cefr": "B1", "tags": ["zeit"], "example": "Wie ist die Abholzeit?" },
         { "id": "ride_code", "term": "Fahrtcode", "cefr": "A2", "tags": ["sicherheit"], "example": "Der Fahrtcode ist 6392." },
-        { "id": "seat_belt_check", "term": "Gurt-Check", "cefr": "A1", "tags": ["sicherheit"], "example": "Gurt-Check bitte." },
+  { "id": "seat_belt_check", "term": "Gurt anlegen prüfen", "cefr": "A1", "tags": ["sicherheit"], "example": "Bitte einmal prüfen, ob alle den Gurt anhaben." },
         { "id": "split_fare", "term": "Fahrtkosten teilen", "cefr": "B1", "tags": ["geld"], "example": "Lass uns die Fahrtkosten dritteln." },
         { "id": "quiet_mode", "term": "Ruhemodus", "cefr": "B2", "tags": ["präferenz"], "example": "Ich habe den Ruhemodus aktiviert." },
         { "id": "driver_rating", "term": "Fahrerbewertung", "cefr": "A2", "tags": ["feedback"], "example": "Er hat eine hohe Fahrerbewertung." },
         { "id": "reroute", "term": "umleiten", "cefr": "B2", "tags": ["aktion"], "example": "Können Sie umleiten um den Stau zu meiden?" },
         { "id": "ride_pool", "term": "Pool-Fahrt", "cefr": "A2", "tags": ["option"], "example": "Wir haben eine Pool-Fahrt gewählt." },
-        { "id": "late_fee", "term": "späte Stornogebühr", "cefr": "B2", "tags": ["policy"], "example": "Es fiel eine späte Stornogebühr an." },
+  { "id": "late_fee", "term": "späte Stornogebühr", "cefr": "B2", "tags": ["policy"], "example": "Es fiel eine späte Stornogebühr an." },
         { "id": "surge_multiplier", "term": "Surge-Multiplikator", "cefr": "C1", "tags": ["markt"], "example": "Der Surge-Multiplikator lag bei 2,5x.", "hint": "temporärer Faktor" },
         { "id": "intoxicated_passenger", "term": "betrunkener Fahrgast", "cefr": "C1", "tags": ["issue"], "example": "Der Fahrer verweigerte einen betrunkenen Fahrgast." },
         { "id": "crowded_district", "term": "überfülltes Ausgehviertel", "cefr": "B2", "tags": ["setting"], "example": "Das Ausgehviertel ist heute überfüllt." },
-        { "id": "handoff_point", "term": "Übergabepunkt", "cefr": "C2", "tags": ["logistik"], "example": "Lass uns einen neutralen Übergabepunkt wählen.", "hint": "Treffpunkt" },
-        { "id": "fare_dispute", "term": "Tarifstreit", "cefr": "C1", "tags": ["problem"], "example": "Ich habe einen Tarifstreit eröffnet." },
+  { "id": "handoff_point", "term": "Treff-/Übergabepunkt", "cefr": "C1", "tags": ["logistik"], "example": "Lass uns einen neutralen Treff- oder Übergabepunkt wählen.", "hint": "Treffpunkt" },
+  { "id": "fare_dispute", "term": "Streit um den Fahrpreis", "cefr": "C1", "tags": ["problem"], "example": "Ich habe einen Streit um den Fahrpreis eröffnet." },
         { "id": "night_surcharge", "term": "Nachtzuschlag", "cefr": "B2", "tags": ["pricing"], "example": "Nach Mitternacht gibt es einen Nachtzuschlag." }
-      ]
-    },
-    {
-      "id": "coworking_startup",
-      "label": "Coworking & Startup",
-      "items": [
-        { "id": "pitch_deck", "term": "Pitch-Deck", "cefr": "B2", "tags": ["startup"], "example": "Wir finalisieren das Pitch-Deck." },
-        { "id": "early_traction", "term": "erste Traktion", "cefr": "B2", "tags": ["wachstum"], "example": "Wir haben erste Traktion in Europa." },
-        { "id": "burn_rate", "term": "Burn Rate", "cefr": "C1", "tags": ["finanz"], "example": "Unsere Burn Rate ist jetzt tragbar." },
-        { "id": "shipping_feature", "term": "Feature ausliefern", "cefr": "B1", "tags": ["dev"], "example": "Wir wollen wöchentlich ein Feature ausliefern." },
-        { "id": "lean_iteration", "term": "Lean-Iteration", "cefr": "B2", "tags": ["methode"], "example": "Wir setzen auf Lean-Iteration." },
-        { "id": "open_workspace", "term": "offener Arbeitsbereich", "cefr": "A2", "tags": ["raum"], "example": "Es ist ein lauter offener Arbeitsbereich." },
-        { "id": "focus_room", "term": "Fokusraum", "cefr": "A2", "tags": ["raum"], "example": "Buche einen Fokusraum für Anrufe." },
-        { "id": "desk_hoteling", "term": "Desk-Hoteling", "cefr": "B2", "tags": ["policy"], "example": "Wir nutzen Desk-Hoteling für Hybrid.", "hint": "Schreibtisch-Reservierung" },
-        { "id": "seed_round", "term": "Seed-Runde", "cefr": "B2", "tags": ["funding"], "example": "Sie raisen eine Seed-Runde." },
-        { "id": "runway_months", "term": "Runway (Monate)", "cefr": "B1", "tags": ["finanz"], "example": "Wir haben 14 Monate Runway." },
-        { "id": "cash_flow_positive", "term": "Cashflow-positiv", "cefr": "C1", "tags": ["finanz"], "example": "Wir wurden im Q3 cashflow-positiv." },
-        { "id": "product_market_fit", "term": "Product-Market-Fit", "cefr": "B2", "tags": ["wachstum"], "example": "Wir arbeiten zum Product-Market-Fit hin." },
-        { "id": "pivot_hypothesis", "term": "Pivot-Hypothese", "cefr": "C1", "tags": ["strategie"], "example": "Wir haben eine Pivot-Hypothese formuliert.", "hint": "Strategie-Idee" },
-        { "id": "backlog_grooming", "term": "Backlog-Grooming", "cefr": "B2", "tags": ["agile"], "example": "Backlog-Grooming ist morgen." },
-        { "id": "technical_debt", "term": "Technische Schulden", "cefr": "B2", "tags": ["engineering"], "example": "Wir planen Zeit für technische Schulden." },
-        { "id": "founder_dilution", "term": "Gründerverwässerung", "cefr": "C1", "tags": ["finanz"], "example": "Die Runde führt zu Gründerverwässerung." },
-        { "id": "talent_retention", "term": "Talentbindung", "cefr": "C1", "tags": ["hr"], "example": "Talentbindung hat Priorität." },
-        { "id": "async_standup", "term": "asynchrones Stand-up", "cefr": "B1", "tags": ["workflow"], "example": "Freitags machen wir ein asynchrones Stand-up." },
-        { "id": "code_freeze", "term": "Code Freeze", "cefr": "B1", "tags": ["release"], "example": "Der Code Freeze beginnt heute Abend." },
-        { "id": "go_to_market", "term": "Go-to-Market-Plan", "cefr": "C2", "tags": ["strategie"], "example": "Wir haben einen Go-to-Market-Plan erstellt.", "hint": "Launch-Strategie" }
-      ]
-    },
+                  ]
+            },
     {
       "id": "shared_apartment",
       "label": "WG / Geteilte Wohnung",
@@ -89,7 +63,7 @@
         { "id": "split_utilities", "term": "Nebenkosten teilen", "cefr": "A2", "tags": ["geld"], "example": "Wir teilen die Nebenkosten fair." },
         { "id": "quiet_hours", "term": "Ruhezeiten", "cefr": "A2", "tags": ["regel"], "example": "Die Ruhezeiten beginnen um zehn." },
         { "id": "leftover_label", "term": "Reste beschriften", "cefr": "A2", "tags": ["küche"], "example": "Bitte die Reste beschriften." },
-        { "id": "lease_extension", "term": "Verlängerung des Mietvertrags", "cefr": "B2", "tags": ["vertrag"], "example": "Wir haben über eine Verlängerung des Mietvertrags gesprochen." },
+  { "id": "lease_extension", "term": "Mietvertragsverlängerung", "cefr": "B2", "tags": ["vertrag"], "example": "Wir haben über eine Mietvertragsverlängerung gesprochen." },
         { "id": "roommate_meeting", "term": "WG-Treffen", "cefr": "A2", "tags": ["event"], "example": "Wir haben ein WG-Treffen angesetzt." },
         { "id": "shared_groceries", "term": "gemeinsame Einkäufe", "cefr": "B1", "tags": ["geld"], "example": "Wir tracken gemeinsame Einkäufe in einer Tabelle." },
         { "id": "noise_complaint", "term": "Lärmbeschwerde", "cefr": "B2", "tags": ["issue"], "example": "Der Vermieter bekam eine Lärmbeschwerde." },
@@ -99,9 +73,9 @@
         { "id": "overnight_guest", "term": "Übernachtungsgast", "cefr": "B2", "tags": ["regel"], "example": "Wir brauchen eine Regel zu Übernachtungsgästen." },
         { "id": "utility_cap", "term": "Verbrauchsobergrenze", "cefr": "C1", "tags": ["regel"], "example": "Es gibt eine Verbrauchsobergrenze.", "hint": "Limit" },
         { "id": "conflict_mediator", "term": "informeller Vermittler", "cefr": "C1", "tags": ["rolle"], "example": "Sie war informeller Vermittler." },
-        { "id": "late_rent_fee", "term": "Verspätete Mietgebühr", "cefr": "B2", "tags": ["strafe"], "example": "Es gibt eine Klausel für verspätete Mietgebühr." },
+  { "id": "late_rent_fee", "term": "Gebühr für verspätete Miete", "cefr": "B2", "tags": ["strafe"], "example": "Es gibt eine Klausel zur Gebühr für verspätete Miete." },
         { "id": "sublet_request", "term": "Untermietantrag", "cefr": "B2", "tags": ["admin"], "example": "Ich habe einen Untermietantrag gestellt." },
-        { "id": "lease_transfer", "term": "Mietübertragung", "cefr": "C1", "tags": ["recht"], "example": "Wir haben eine Mietübertragung verhandelt." },
+  { "id": "lease_transfer", "term": "Übertragung des Mietvertrags", "cefr": "C1", "tags": ["recht"], "example": "Wir haben eine Übertragung des Mietvertrags verhandelt." },
         { "id": "shared_calendar", "term": "geteilter Kalender", "cefr": "A2", "tags": ["tool"], "example": "Wir nutzen einen geteilten Kalender für Aufgaben." },
         { "id": "recycling_bin", "term": "Recyclingbehälter", "cefr": "A1", "tags": ["haushalt"], "example": "Bring den Recyclingbehälter raus." },
         { "id": "ventilation_issue", "term": "Belüftungsproblem", "cefr": "C2", "tags": ["problem"], "example": "Es gibt ein anhaltendes Belüftungsproblem.", "hint": "Luftstrom" }
@@ -127,10 +101,10 @@
         { "id": "sound_check", "term": "Soundcheck", "cefr": "B2", "tags": ["event"], "example": "Wir hörten den Soundcheck der Band." },
         { "id": "wristband_scan", "term": "Armband-Scan", "cefr": "A2", "tags": ["entry"], "example": "Du brauchst bei jedem Ausgang einen Armband-Scan." },
         { "id": "day_pass", "term": "Tagesticket", "cefr": "A2", "tags": ["ticket"], "example": "Ich habe nur ein Tagesticket gekauft." },
-        { "id": "campground_noise", "term": "Lärmruhe auf dem Zeltplatz", "cefr": "B2", "tags": ["rule"], "example": "Es gibt Lärmruhe auf dem Zeltplatz." },
+  { "id": "campground_noise", "term": "Nachtruhe auf dem Zeltplatz", "cefr": "B2", "tags": ["rule"], "example": "Es gilt Nachtruhe auf dem Zeltplatz." },
         { "id": "vendor_row", "term": "Händlerreihe", "cefr": "B1", "tags": ["location"], "example": "Essensschlangen gehen um die Händlerreihe." },
         { "id": "eco_deposit", "term": "Öko-Becherpfand", "cefr": "C1", "tags": ["sustainability"], "example": "Du bekommst das Öko-Becherpfand zurück.", "hint": "Pfand für Mehrweg" },
-        { "id": "emergency_exits", "term": "Notausgänge-Plan", "cefr": "C2", "tags": ["safety"], "example": "Studier den Notausgänge-Plan." }
+  { "id": "emergency_exits", "term": "Plan der Notausgänge", "cefr": "C2", "tags": ["safety"], "example": "Studier den Plan der Notausgänge." }
       ]
     },
     {
@@ -144,7 +118,7 @@
         { "id": "rail_maintenance", "term": "Gleiswartung", "cefr": "B2", "tags": ["cause"], "example": "Verspätungen wegen Gleiswartung." },
         { "id": "signal_failure", "term": "Signalstörung", "cefr": "B2", "tags": ["cause"], "example": "Eine Signalstörung stoppte den Verkehr." },
         { "id": "track_obstruction", "term": "Gleisblockade", "cefr": "C1", "tags": ["cause"], "example": "Es gibt eine gemeldete Gleisblockade." },
-        { "id": "ticket_validation", "term": "Ticketvalidierung", "cefr": "A2", "tags": ["admin"], "example": "Ticketvalidierung ist am Gate." },
+  { "id": "ticket_validation", "term": "Ticketvalidierung", "cefr": "A2", "tags": ["admin"], "example": "Die Ticketvalidierung ist am Gate." },
         { "id": "carriage_swap", "term": "Wagenaustausch", "cefr": "B2", "tags": ["event"], "example": "Ein Wagenaustausch verursachte Verzögerung." },
         { "id": "crowded_platform", "term": "überfüllter Bahnsteig", "cefr": "A2", "tags": ["setting"], "example": "Der Bahnsteig ist überfüllt." },
         { "id": "revised_timetable", "term": "überarbeiteter Fahrplan", "cefr": "B1", "tags": ["notice"], "example": "Sieh dir den überarbeiteten Fahrplan an." },
@@ -155,8 +129,8 @@
         { "id": "contingency_bus", "term": "Ersatzbus", "cefr": "B2", "tags": ["transport"], "example": "Ein Ersatzbus ersetzte den Zug." },
         { "id": "overhead_line_issue", "term": "Oberleitungsproblem", "cefr": "C1", "tags": ["cause"], "example": "Ein Oberleitungsproblem verursachte Ausfall." },
         { "id": "crowd_control", "term": "Crowd-Control-Personal", "cefr": "B2", "tags": ["role"], "example": "Crowd-Control-Personal leitete Leute." },
-        { "id": "platform_reassignment", "term": "späte Bahnsteigneuzuordnung", "cefr": "C2", "tags": ["notice"], "example": "Späte Bahnsteigneuzuordnung sorgte für Verwirrung.", "hint": "später Wechsel" },
-        { "id": "service_suspension", "term": "Teildienst-Aussetzung", "cefr": "C1", "tags": ["status"], "example": "Eine Teildienst-Aussetzung bleibt bestehen." }
+  { "id": "platform_reassignment", "term": "späte Bahnsteig-Umverteilung", "cefr": "C2", "tags": ["notice"], "example": "Eine späte Bahnsteig-Umverteilung sorgte für Verwirrung.", "hint": "später Wechsel" },
+  { "id": "service_suspension", "term": "Teilaussetzung des Dienstes", "cefr": "C1", "tags": ["status"], "example": "Eine Teilaussetzung des Dienstes bleibt bestehen." }
       ]
     },
     {
@@ -170,11 +144,11 @@
         { "id": "action_items", "term": "Aktionspunkte", "cefr": "A2", "tags": ["outcome"], "example": "Lasst uns die Aktionspunkte auflisten." },
         { "id": "video_off", "term": "Video ausschalten", "cefr": "A1", "tags": ["action"], "example": "Ich schalte Video aus um Bandbreite zu sparen." },
         { "id": "join_late", "term": "spät beitreten", "cefr": "A2", "tags": ["status"], "example": "Sorry, ich bin spät beigetreten." },
-        { "id": "hard_mute", "term": "Hart-Stummschaltung", "cefr": "B2", "tags": ["setting"], "example": "Aktiviere eine Hart-Stummschaltung für Präsentierende." },
+  { "id": "hard_mute", "term": "harte Stummschaltung", "cefr": "B2", "tags": ["setting"], "example": "Aktiviere eine harte Stummschaltung für Präsentierende." },
         { "id": "calendar_invite", "term": "Kalendereinladung", "cefr": "A2", "tags": ["admin"], "example": "Hast du die Kalendereinladung bekommen?" },
         { "id": "virtual_background", "term": "virtueller Hintergrund", "cefr": "B1", "tags": ["feature"], "example": "Dein virtueller Hintergrund flackert." },
         { "id": "breakout_room", "term": "Breakout-Raum", "cefr": "B1", "tags": ["feature"], "example": "Lasst uns einen Breakout-Raum nutzen." },
-        { "id": "record_session", "term": "Session aufzeichnen", "cefr": "B1", "tags": ["action"], "example": "Können wir die Session aufzeichnen?" },
+  { "id": "record_session", "term": "die Sitzung aufzeichnen", "cefr": "B1", "tags": ["action"], "example": "Können wir die Sitzung aufzeichnen?" },
         { "id": "follow_up_thread", "term": "Follow-up-Thread", "cefr": "B2", "tags": ["workflow"], "example": "Starte einen Follow-up-Thread im Chat." },
         { "id": "bandwidth_constraint", "term": "Bandbreitenengpass", "cefr": "C1", "tags": ["issue"], "example": "Wir haben einen Bandbreitenengpass.", "hint": "limitierte Kapazität" },
         { "id": "latency_spike", "term": "Latenzspitze", "cefr": "C1", "tags": ["issue"], "example": "Wir sahen eine Latenzspitze im Call." },
@@ -189,13 +163,13 @@
       "id": "conflict_resolution",
       "label": "Konflikt & Klärung",
       "items": [
-        { "id": "miscommunication", "term": "Misskommunikation", "cefr": "B1", "tags": ["issue"], "example": "Es war eine Misskommunikation." },
+  { "id": "miscommunication", "term": "Missverständnis", "cefr": "B1", "tags": ["issue"], "example": "Es gab ein Missverständnis." },
         { "id": "own_that", "term": "ich übernehme das", "cefr": "B2", "tags": ["accountability"], "example": "Den Fehler übernehme ich." },
         { "id": "find_common_ground", "term": "gemeinsame Basis finden", "cefr": "B2", "tags": ["resolution"], "example": "Wir müssen eine gemeinsame Basis finden." },
         { "id": "soften_tone", "term": "den Ton abschwächen", "cefr": "B2", "tags": ["advice"], "example": "Lass uns den Ton der E-Mail abschwächen." },
         { "id": "de_escalate", "term": "deeskalieren", "cefr": "C1", "tags": ["strategy"], "example": "Wir haben schnell versucht zu deeskalieren." },
         { "id": "active_listening", "term": "aktives Zuhören", "cefr": "B2", "tags": ["strategy"], "example": "Nutze Techniken des aktiven Zuhörens." },
-        { "id": "empathy_statement", "term": "Empathiesatz", "cefr": "B1", "tags": ["tool"], "example": "Beginne mit einem Empathiesatz." },
+  { "id": "empathy_statement", "term": "empathische Aussage", "cefr": "B1", "tags": ["tool"], "example": "Beginne mit einer empathischen Aussage." },
         { "id": "accountability_gap", "term": "Verantwortungslücke", "cefr": "C1", "tags": ["issue"], "example": "Hier gibt es eine Verantwortungslücke.", "hint": "unklare Zuständigkeit" },
         { "id": "clarifying_question", "term": "klärende Frage", "cefr": "A2", "tags": ["tool"], "example": "Stell zuerst eine klärende Frage." },
         { "id": "repair_attempt", "term": "Reparaturversuch", "cefr": "B2", "tags": ["action"], "example": "Der Witz war ein Reparaturversuch." },
@@ -208,7 +182,7 @@
         { "id": "defensive_posture", "term": "defensive Haltung", "cefr": "C1", "tags": ["behavior"], "example": "Er nahm eine defensive Haltung ein." },
         { "id": "trust_rebuilding", "term": "Vertrauensaufbau", "cefr": "C2", "tags": ["process"], "example": "Vertrauensaufbau braucht Zeit." },
         { "id": "acknowledge_harm", "term": "den Schaden anerkennen", "cefr": "B2", "tags": ["action"], "example": "Erst den Schaden anerkennen." },
-        { "id": "proactive_check_in", "term": "proaktives Check-in", "cefr": "B2", "tags": ["prevention"], "example": "Plane ein proaktives Check-in." }
+  { "id": "proactive_check_in", "term": "proaktisches Check-in", "cefr": "B2", "tags": ["prevention"], "example": "Plane ein proaktisches Check-in." }
       ]
     }
   ]

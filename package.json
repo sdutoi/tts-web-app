@@ -8,7 +8,10 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "validate:vocab": "node scripts/validateVocab.mjs"
+    "validate:vocab": "node scripts/validateVocab.mjs",
+    "test:better:text": "node scripts/test_better_text.mjs",
+    "test:better:tts": "node scripts/test_better_tts.mjs",
+    "test:better:all": "npm run test:better:text && npm run test:better:tts"
   },
   "dependencies": {
     "next": "15.5.3",

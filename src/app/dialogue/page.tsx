@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo, Suspense } from "react";
+import { useEffect, useRef, useState, useMemo, Suspense, useCallback } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useI18n } from '../../i18n/I18nProvider';
+import { ProficiencySelector } from '../components/ProficiencySelector';
+import logo from "../../../logo.png";
 
 // Voice candidates per language (max 5 for demo selection). Order matters for initial defaults.
 const VOICE_CANDIDATES: Record<string,string[]> = {
-  en: ["alloy","echo","fable","nova","verse"],
+  en: ["ash","coral","alloy","echo","verse"],
   fr: ["nova","shimmer","alloy","verse","coral"],
   de: ["verse","onyx","alloy","echo","shimmer"],
   it: ["ballad","alloy","nova","ash","coral"],
@@ -26,7 +30,7 @@ function demoSentence(lang: string): string {
 }
 
 type Level = "A1"|"A2"|"B1"|"B2"|"C1"|"C2";
-interface VocabItem { id: string; term: string; cefr: Level; tags?: string[]; example?: string; hint?: string; }
+interface VocabItem { id: string; term: string; cefr: Level; tags?: string[]; example?: string; hint?: string; translations?: Record<string,string>; }
 interface Category { id: string; label: string; items: VocabItem[]; }
 interface VocabData { language: string; categories: Category[]; }
 
@@ -38,18 +42,31 @@ function DialogueBuilderInner() {
   const search = useSearchParams();
   const qpLang = search.get("lang") || "en";
   const qpLevel = (search.get("level") as Level) || "A2";
-  const seed = search.get("seed") || "";
+  const seed = search.get("seed") || ""; // retain seed support for display
+  const [showProficiencyPrompt, setShowProficiencyPrompt] = useState(!search.get('level'));
   const [level, setLevel] = useState<Level>(qpLevel);
-  const [lang, setLang] = useState(qpLang);
+  const [lang] = useState(qpLang); // selected previously on landing page; no UI to change here now
   const [vocab, setVocab] = useState<VocabData | null>(null);
   const [enVocab, setEnVocab] = useState<VocabData | null>(null); // English reference for translations
-  const [scenarioId, setScenarioId] = useState<string>("");
+  const [scenarioId, setScenarioId] = useState<string>(""); // '' none selected
+  const [customScenario, setCustomScenario] = useState("");
+  const [showCustomScenarioModal, setShowCustomScenarioModal] = useState(false);
+  const [customScenarioDraft, setCustomScenarioDraft] = useState("");
+  const [prevScenarioId, setPrevScenarioId] = useState<string | null>(null);
+  const [customScenarioError, setCustomScenarioError] = useState<string | null>(null);
+  const isCustomScenario = scenarioId === '__custom__';
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [style, setStyle] = useState("");
   const [extra, setExtra] = useState("");
   const [customWordsRaw, setCustomWordsRaw] = useState("");
-  const DEFAULT_TURNS = 6; // fixed number of turns
+  // Creativity (temperature) control: align with API clamp [0, 1.5]
+  const [creativity, setCreativity] = useState<number>(0.8);
+  // Dialogue length selector: short=4, medium=6, long=8
+  type LengthChoice = 'short' | 'medium' | 'long';
+  const [lengthChoice, setLengthChoice] = useState<LengthChoice>('medium');
+  const TURNS_BY_LENGTH: Record<LengthChoice, number> = { short: 4, medium: 6, long: 8 };
   const [dialogue, setDialogue] = useState<DialogueResponse | null>(null);
+  const [finalized, setFinalized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playingTurn, setPlayingTurn] = useState<number | null>(null);
@@ -61,9 +78,17 @@ function DialogueBuilderInner() {
   const [voiceA, setVoiceA] = useState<string>(()=> (VOICE_CANDIDATES["en"] || VOICE_CANDIDATES.default)[0]);
   const [voiceB, setVoiceB] = useState<string>(()=> (VOICE_CANDIDATES["en"] || VOICE_CANDIDATES.default)[1]);
   const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [dragOverA, setDragOverA] = useState(false);
+  const [dragOverB, setDragOverB] = useState(false);
+  const [showTranslateModal, setShowTranslateModal] = useState(false);
+  const [translateLoading, setTranslateLoading] = useState(false);
+  const [translateError, setTranslateError] = useState<string | null>(null);
+  const [translated, setTranslated] = useState<{ lang: 'en'|'de'; turns: { speaker: string; original: string; translation: string; notes?: string }[] } | null>(null);
 
   // Simple in-memory client audio cache
   const audioCache = useRef<Map<string, string>>(new Map()); // key -> objectURL
+  const voiceDemoCache = useRef<Map<string, string>>(new Map()); // voice+lang -> objectURL
 
   // When language changes, ensure selected voices belong to new candidate list; if not, reset to first two.
   useEffect(()=> {
@@ -86,7 +111,8 @@ function DialogueBuilderInner() {
     async function loadEn() {
       if (enVocab) return; // already loaded
       try {
-        const path = '/src/data/vocab_en.json';
+        // Use the high school English set as canonical reference for labels/IDs
+        const path = '/src/data/vocab_en_hs.json';
         const res = await fetch(path);
         if (res.ok) {
           const data = await res.json();
@@ -95,7 +121,7 @@ function DialogueBuilderInner() {
         }
       } catch {/* ignore */}
       try {
-        const imported = await import('../../data/vocab_en.json');
+        const imported = await import('../../data/vocab_en_hs.json');
         if (!cancelled) setEnVocab(imported as VocabData);
       } catch {/* ignore */}
     }
@@ -107,11 +133,13 @@ function DialogueBuilderInner() {
   useEffect(() => {
     let cancelled = false;
     async function load(langCode: string) {
+  // Map languages to specific vocab files when needed. Use HS sets for French and English.
+  const fileLang = (code: string) => (code === 'fr' ? 'fr_hs' : code === 'en' ? 'en_hs' : code);
       const attemptOrder = [langCode, "en"] as string[]; // fallback to English
       for (const code of attemptOrder) {
         try {
           // First try fetch (works if statically served). If that fails, dynamic import.
-          const fetchPath = `/src/data/vocab_${code}.json`;
+          const fetchPath = `/src/data/vocab_${fileLang(code)}.json`;
           try {
             const res = await fetch(fetchPath);
             if (res.ok) {
@@ -119,18 +147,16 @@ function DialogueBuilderInner() {
               if (!cancelled) {
                 setVocab(data);
                 // Reset scenario to first category of new vocab unless existing id still present.
-                const hasOldScenario = data.categories?.some((c: Category) => c.id === scenarioId);
-                if (!hasOldScenario && data.categories?.length) setScenarioId(data.categories[0].id);
+                // Keep placeholder; do not auto-select first scenario
               }
               return; // success
             }
           } catch { /* swallow and try dynamic import */ }
-          const imported = await import(`../../data/vocab_${code}.json`);
+          const imported = await import(`../../data/vocab_${fileLang(code)}.json`);
           if (!cancelled) {
             const data = imported as VocabData;
             setVocab(data);
-            const hasOldScenario = data.categories?.some((c: Category) => c.id === scenarioId);
-            if (!hasOldScenario && data.categories?.length) setScenarioId(data.categories[0].id);
+            // Keep placeholder; do not auto-select
           }
           return;
         } catch (e) {
@@ -149,19 +175,63 @@ function DialogueBuilderInner() {
     setSelectedItems(s => s.includes(id) ? s.filter(x=>x!==id) : [...s, id]);
   }
 
-  async function generate(action: "generate"|"refine") {
-    const customWords = customWordsRaw.split(/[,\n;]/).map(s=>s.trim()).filter(Boolean);
-    if (selectedItems.length === 0 && customWords.length===0) {
-      setError("Select at least one vocab item or add custom words.");
-      return;
+  const [refineNotes, setRefineNotes] = useState("");
+
+  const { uiLang } = useI18n();
+
+  async function openTranslateModal() {
+    if (!dialogue) return;
+    setShowTranslateModal(true);
+    setTranslateLoading(true);
+    setTranslateError(null);
+    setTranslated(null);
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uiLang, dialogue: { scenario: dialogue.scenario, level: dialogue.level, turns: dialogue.turns.map(t=> ({ speaker: t.speaker, text: t.text })) } })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setTranslated(data);
+    } catch (e: unknown) {
+      setTranslateError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setTranslateLoading(false);
     }
+  }
+
+  function copyAllTranslated() {
+    if (!translated) return;
+    const lines = translated.turns.map(t => `${t.speaker}: ${t.original}\n${t.translation}${t.notes ? `\n(${t.notes})` : ''}`);
+    const full = lines.join('\n\n');
+    navigator.clipboard.writeText(full).catch(()=>{/* ignore */});
+  }
+
+  async function generate(action: "generate"|"refine") {
+  const customWords = customWordsRaw.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);
     setLoading(true);
     setError(null);
+    setFinalized(false);
     try {
       const res = await fetch("/api/dialogue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, lang, level, scenarioId, itemIds: selectedItems, customWords, turns: DEFAULT_TURNS, style, instructions: extra, previousDialogue: dialogue })
+        body: JSON.stringify({
+          action,
+          lang,
+          level,
+          scenarioId,
+          customScenario: isCustomScenario ? customScenario : undefined,
+          itemIds: selectedItems,
+            customWords,
+          turns: TURNS_BY_LENGTH[lengthChoice],
+          style,
+          instructions: extra,
+          temperature: creativity,
+          previousDialogue: dialogue,
+          refineNotes: action==='refine'? refineNotes: undefined
+        })
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
@@ -170,6 +240,18 @@ function DialogueBuilderInner() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function downloadTurn(idx: number, text: string, speaker: string) {
+    try {
+      const { arrayBuffer } = await ensureAudio({ text, speaker });
+      const type = ttsFormat === 'mp3' ? 'audio/mpeg' : ttsFormat === 'ogg' ? 'audio/ogg' : 'audio/wav';
+      const blob = new Blob([arrayBuffer], { type });
+      const safeSpeaker = (speaker || '').toUpperCase() || ((idx % 2 === 0) ? 'A' : 'B');
+      triggerDownload(blob, `turn_${(idx+1).toString().padStart(2,'0')}_${safeSpeaker}.${ttsFormat}`);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
     }
   }
 
@@ -216,108 +298,90 @@ function DialogueBuilderInner() {
     return { url, arrayBuffer };
   }
 
-  // Helper: English label for scenario/category id
+  // Prefetch short demo clips for each candidate voice (once per language)
+  useEffect(()=> {
+    let cancelled = false;
+    const voices = VOICE_CANDIDATES[lang] || VOICE_CANDIDATES.default;
+    async function prefetch() {
+      for (const v of voices) {
+        const key = `${lang}|${v}`;
+        if (voiceDemoCache.current.has(key)) continue;
+        try {
+          const text = demoSentence(lang);
+          const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ text, lang, voice: v, speed: 0.95, format: 'mp3' }) });
+          if (!res.ok) continue;
+          const blob = await res.blob();
+          if (cancelled) return;
+          const url = URL.createObjectURL(blob);
+          voiceDemoCache.current.set(key, url);
+        } catch { /* ignore individual failures */ }
+      }
+    }
+    prefetch();
+    return ()=> { cancelled = true; };
+  }, [lang]);
   function englishCategoryLabel(id: string, fallback: string): string {
     const cat = enVocab?.categories.find(c=> c.id===id);
     return cat?.label || fallback;
   }
 
-  // Filter out removed scenarios
-  const filteredCategories = useMemo(()=> (vocab?.categories || []).filter(c=> !["doctor_visit","climate_action"].includes(c.id)), [vocab]);
-  const scenario = filteredCategories.find(c=>c.id===scenarioId) || filteredCategories[0];
-  const [sampledItems, setSampledItems] = useState<VocabItem[]>([]);
-  const SAMPLE_SIZE = 5;
-  // Helper for sampling vocab items (extracted so a reshuffle button can reuse it)
-  function computeSampledItems(currentScenario: Category | undefined, currentLevel: Level): VocabItem[] {
+  // Filtered categories (could add further filtering later)
+  const filteredCategories = useMemo(()=> (vocab?.categories ?? []), [vocab]);
+
+  // Selected scenario object
+  const scenario = useMemo(()=> filteredCategories.find(c=> c.id === scenarioId), [filteredCategories, scenarioId]);
+
+  // Helper for sampling vocab items
+  function levelGroup(l: Level): Level[] {
+    if (l === 'A1' || l === 'A2') return ['A1','A2'];
+    if (l === 'B1' || l === 'B2') return ['B1','B2'];
+    return [l];
+  }
+
+  const computeSampledItems = useCallback((currentScenario: Category | undefined, currentLevel: Level, nonce: number): VocabItem[] => {
     if (!currentScenario) return [];
-    const levelOrder: Level[] = ["A1","A2","B1","B2","C1","C2"];
-    const targetIdx = levelOrder.indexOf(currentLevel);
-    function candidatesFor(idx: number) {
-      if (!currentScenario) return [];
-      return currentScenario.items.filter(it=> levelOrder.indexOf(it.cefr)===idx);
-    }
-    let candidates = candidatesFor(targetIdx);
-    let radius = 1;
-    while (candidates.length < 20 && (targetIdx - radius >= 0 || targetIdx + radius < levelOrder.length)) {
-      if (targetIdx - radius >= 0) candidates = candidates.concat(candidatesFor(targetIdx - radius));
-      if (targetIdx + radius < levelOrder.length) candidates = candidates.concat(candidatesFor(targetIdx + radius));
-      radius++;
-    }
-    const map = new Map<string, VocabItem>();
-    for (const it of candidates) { if (!map.has(it.id)) map.set(it.id, it); }
-    const pool = Array.from(map.values()).slice(0, 20);
-    const shuffled = [...pool].sort(()=> Math.random() - 0.5);
-    return shuffled.slice(0, SAMPLE_SIZE);
-  }
+    const poolLevels = new Set(levelGroup(currentLevel));
+    const pool = currentScenario.items.filter(it => poolLevels.has(it.cefr));
+    // Deterministic shuffle by nonce: rotate by (nonce mod length)
+    const arr = [...pool];
+    if (arr.length === 0) return arr;
+    const k = nonce % arr.length;
+    const rotated = arr.slice(k).concat(arr.slice(0, k));
+    return rotated.slice(0, 12);
+  }, []);
 
-  // Build a new sample preserving currently selected items; fills the remaining slots with random others.
-  function reshuffleSample() {
-    if (!scenario) return;
-    // Resolve selected item objects present in current scenario
-    const selectedSet = new Set(selectedItems);
-    const selectedObjs: VocabItem[] = scenario.items.filter(it => selectedSet.has(it.id));
-    // If user selected more items than sample size, we keep only the first SAMPLE_SIZE (stable order based on their current order)
-    const preserved = selectedObjs.slice(0, SAMPLE_SIZE);
-    const remainingSlots = SAMPLE_SIZE - preserved.length;
-    if (remainingSlots <= 0) {
-      setSampledItems(preserved);
-      // Do NOT clear selection – requirement: keep them selected.
-      return;
-    }
-    // Candidate pool excludes already preserved items
-    const preservedIds = new Set(preserved.map(p=>p.id));
-    // Reuse compute logic to get a broader pool (without selection weight). We'll merge scenario items across levels similar to computeSampledItems.
-    const basePool = computeSampledItems(scenario, level)
-      // ensure we also have access to other scenario items if computeSampledItems missed some due to level targeting
-      .concat(scenario.items.filter(it => !preservedIds.has(it.id)))
-      .filter((it, idx, arr)=> arr.findIndex(x=>x.id===it.id)===idx) // dedupe
-      .filter(it => !preservedIds.has(it.id));
-    const shuffledPool = [...basePool].sort(()=> Math.random() - 0.5);
-    const fillers = shuffledPool.slice(0, remainingSlots);
-    // Combine preserved + fillers. We keep preserved items first for predictability.
-    const nextSample = [...preserved, ...fillers];
-    setSampledItems(nextSample);
-    // Keep selection intact (do not modify selectedItems)
-  }
+  const [sampleNonce, setSampleNonce] = useState(0);
+  const sampledItems = useMemo(()=> computeSampledItems(scenario, level, sampleNonce), [computeSampledItems, scenario, level, sampleNonce]);
+  const reshuffleSample = () => setSampleNonce(n=>n+1);
 
-  // Initial / reactive sampling
-  useEffect(()=> {
-    // On scenario/level/lang changes we recompute fresh sample and clear previous selections (intended UX when context changes).
-    setSampledItems(computeSampledItems(scenario, level));
-    setSelectedItems([]);
-  }, [scenarioId, scenario, level, lang]);
+  // Full dialogue download build state
   const [compiling, setCompiling] = useState(false);
-  const [compileProgress, setCompileProgress] = useState<{done:number; total:number}>({done:0,total:0});
+  const [compileProgress, setCompileProgress] = useState<{done:number; total:number}>({ done: 0, total: 0 });
 
   async function downloadFullDialogue() {
     if (!dialogue) return;
-    setError(null);
     setCompiling(true);
-    const turns = dialogue.turns;
-    setCompileProgress({ done: 0, total: turns.length });
+    setError(null);
     try {
-      // Collect ArrayBuffers for each turn sequentially to respect rate limits and show progress
-      const buffers: ArrayBuffer[] = [];
-      for (let i=0;i<turns.length;i++) {
-        const t = turns[i];
-        const speaker = t.speaker || (i % 2 === 0 ? "A" : "B");
-        const { arrayBuffer } = await ensureAudio({ text: t.text, speaker });
-        buffers.push(arrayBuffer);
-        setCompileProgress({ done: i+1, total: turns.length });
+      const encoded: ArrayBuffer[] = [];
+      setCompileProgress({ done: 0, total: dialogue.turns.length });
+      for (let i=0;i<dialogue.turns.length;i++) {
+        const turn = dialogue.turns[i];
+        const sp = turn.speaker || (i % 2 === 0 ? 'A' : 'B');
+        const { arrayBuffer } = await ensureAudio({ text: turn.text, speaker: sp });
+        encoded.push(arrayBuffer);
+        setCompileProgress({ done: i+1, total: dialogue.turns.length });
       }
-      if (ttsFormat === "wav") {
-        const wav = await buildWavWithSilence(buffers, gapSeconds);
-        const blob = new Blob([wav], { type: 'audio/wav' });
-        triggerDownload(blob, `dialogue_${lang}_${level}.wav`);
-      } else if (ttsFormat === "mp3") {
-        // Even for MP3 we first create proper WAV with silence and then fall back to naive MP3 concat (which may ignore gaps);
-        // so we prioritize recommending WAV for reliable gaps.
-        const joined = concatenateMp3(buffers); // existing behavior
-        const blob = new Blob([joined as unknown as BlobPart], { type: "audio/mpeg" });
+      if (ttsFormat === 'mp3') {
+        const joined = concatenateMp3(encoded);
+        const ab = new ArrayBuffer(joined.byteLength);
+        new Uint8Array(ab).set(joined);
+        const blob = new Blob([ab], { type: 'audio/mpeg' });
         triggerDownload(blob, `dialogue_${lang}_${level}.mp3`);
       } else {
-        const blob = new Blob(buffers, { type: "audio/ogg" });
-        triggerDownload(blob, `dialogue_${lang}_${level}.ogg`);
+        const wav = await buildWavWithSilence(encoded, gapSeconds);
+        const blob = new Blob([wav], { type: 'audio/wav' });
+        triggerDownload(blob, `dialogue_${lang}_${level}.wav`);
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
@@ -450,84 +514,136 @@ function DialogueBuilderInner() {
 
   const customWordsCount = customWordsRaw.split(/[,\n;]/).map(s=>s.trim()).filter(Boolean).length;
 
+
   return (
-    <main className="max-w-5xl mx-auto p-6 space-y-6">
-  <h1 className="text-2xl font-semibold">{t('dialogue.title')}</h1>
+      <main className="min-h-screen bg-gray-100">
+        {showProficiencyPrompt && (
+          <ProficiencySelector
+            lang={lang}
+            initialLevel={undefined}
+            onConfirm={(lev)=> { setLevel(lev); setShowProficiencyPrompt(false); }}
+          />
+        )}
+        <div className="max-w-5xl mx-auto p-6 space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <Image src={logo} alt="Logo" width={36} height={36} className="rounded" />
+            </div>
+            <Link href="/" className="text-sm inline-flex items-center gap-1 px-3 py-1.5 rounded border border-gray-300 text-gray-700 hover:bg-white transition-colors bg-gray-50">
+              <span>← {t('nav.home')}</span>
+            </Link>
+          </div>
       {seed && (
         <div className="bg-indigo-50 border border-indigo-200 text-indigo-800 text-sm rounded p-3">
-          <span className="font-medium">Seed sentence:</span> {seed}
+          <span className="font-medium">{t('seed.sentence')}</span> {seed}
         </div>
       )}
     <section className="space-y-4">
-  <div className="grid md:grid-cols-3 gap-4">
-          <label className="flex items-center gap-2"><span className="w-20">{t('common.language')}</span>
-            <select className="border rounded p-2 flex-1" value={lang} onChange={e=>setLang(e.target.value)}>
-              <option value="en">English</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-              <option value="it">Italian</option>
-              <option value="es">Spanish</option>
+        <div className="grid md:grid-cols-3 gap-4 items-start">
+          <div className="col-span-3 md:col-span-2 lg:col-span-1">
+            <select
+              className={`border rounded p-2 w-full ${(!scenarioId || scenarioId==='') ? 'italic text-gray-600' : 'text-gray-800'}`}
+              value={scenarioId}
+              onChange={(e)=> {
+                const val = e.target.value;
+                if (val === '__custom__') {
+                  setPrevScenarioId(scenarioId || null);
+                  setScenarioId('__custom__');
+                  setCustomScenarioDraft(customScenario || '');
+                  setCustomScenarioError(null);
+                  setShowCustomScenarioModal(true);
+                } else {
+                  setScenarioId(val);
+                }
+              }}
+            >
+              <option value="" disabled hidden>{t('dialogue.pickScenario')}</option>
+              {filteredCategories.map(c=> (
+                <option key={c.id} value={c.id}>{englishCategoryLabel(c.id, c.label)}</option>
+              ))}
+              <option value="__custom__">{t('dialogue.ownScenario')}</option>
             </select>
-          </label>
-          <label className="flex items-center gap-2"><span className="w-20">{t('common.level')}</span>
-            <select className="border rounded p-2 flex-1" value={level} onChange={e=>setLevel(e.target.value as Level)}>
-              {(["A1","A2","B1","B2","C1","C2"] as Level[]).map(l=> <option key={l}>{l}</option>)}
-            </select>
-          </label>
-          <label className="flex items-center gap-2"><span className="w-20">{t('common.scenario')}</span>
-            <select className="border rounded p-2 flex-1" value={scenarioId} onChange={e=>setScenarioId(e.target.value)}>
-              {filteredCategories.map(c=> <option key={c.id} value={c.id}>{englishCategoryLabel(c.id, c.label)}</option>)}
-            </select>
-          </label>
-          {/* Voice selection now handled in a dedicated section below */}
+          </div>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           <input className="border rounded p-2" placeholder={t('placeholders.styleTone')} value={style} onChange={e=>setStyle(e.target.value)} />
           <input className="border rounded p-2" placeholder={t('placeholders.extraInstructions')} value={extra} onChange={e=>setExtra(e.target.value)} />
         </div>
+        <div className="grid md:grid-cols-3 gap-4 items-center">
+          <label className="flex items-center gap-2 text-sm col-span-2 md:col-span-1">
+            <span className="w-28">{t('dialogue.creativity')}</span>
+            <input
+              type="range"
+              min={0}
+              max={1.5}
+              step={0.05}
+              value={creativity}
+              onChange={e=>setCreativity(parseFloat(e.target.value))}
+              className="flex-1"
+            />
+            <span className="w-12 text-right tabular-nums">{creativity.toFixed(2)}</span>
+          </label>
+          <div className="text-xs text-gray-500 col-span-2 md:col-span-1">{t('dialogue.creativityHint')}</div>
+          <div className="flex items-center gap-2 text-sm col-span-2 md:col-span-1">
+            <span className="w-20">{t('dialogue.length')}</span>
+            <div className="inline-flex rounded border overflow-hidden">
+              <button type="button" onClick={()=>setLengthChoice('short')} className={`px-3 py-1 ${lengthChoice==='short'?'bg-indigo-600 text-white':'bg-white hover:bg-indigo-50'}`}>{t('dialogue.length.short')}</button>
+              <button type="button" onClick={()=>setLengthChoice('medium')} className={`px-3 py-1 border-l ${lengthChoice==='medium'?'bg-indigo-600 text-white':'bg-white hover:bg-indigo-50'}`}>{t('dialogue.length.medium')}</button>
+              <button type="button" onClick={()=>setLengthChoice('long')} className={`px-3 py-1 border-l ${lengthChoice==='long'?'bg-indigo-600 text-white':'bg-white hover:bg-indigo-50'}`}>{t('dialogue.length.long')}</button>
+            </div>
+          </div>
+        </div>
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="font-medium">{t('dialogue.scenarioVocabulary')}</h2>
-            <button type="button" onClick={reshuffleSample} className="text-xs px-2 py-1 border rounded hover:bg-indigo-50">
-              {t('dialogue.reshuffle')}
-            </button>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
-            {sampledItems.map(it => {
-              const active = selectedItems.includes(it.id);
-              // English translation lookup (only show if current lang not English)
-              let enTerm: string | undefined;
-              if (lang !== 'en' && enVocab) {
-                for (const cat of enVocab.categories) {
-                  const match = cat.items.find(i=> i.id === it.id);
-                  if (match) { enTerm = match.term; break; }
-                }
-              }
-              return (
-                <button key={it.id} type="button" onClick={()=>toggleItem(it.id)} className={`text-left border rounded p-2 text-sm hover:border-indigo-500 ${active?"bg-indigo-600 text-white border-indigo-600":"bg-white"}`}>
-                  <div className="font-semibold">{it.term}</div>
-                  <div className="opacity-80 text-xs">{it.cefr}</div>
-                  {enTerm && <div className="mt-0.5 text-[11px] italic opacity-70">EN: {enTerm}</div>}
-                  {it.hint && <div className="mt-1 text-[11px] opacity-70 line-clamp-2">{it.hint}</div>}
-                </button>
-              );
-            })}
-          </div>
-          {sampledItems.length===0 && <div className="text-sm text-gray-600">No items.</div>}
+          {(!scenarioId || isCustomScenario) ? null : (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-medium">{t('dialogue.scenarioVocabulary')}</h2>
+                <button type="button" onClick={reshuffleSample} className="text-xs px-2 py-1 border rounded hover:bg-indigo-50" disabled={!scenario}>{t('dialogue.reshuffle')}</button>
+              </div>
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {sampledItems.map(it => {
+                  const active = selectedItems.includes(it.id);
+                  let enTerm: string | undefined;
+                  if (lang !== 'en') {
+                    // Prefer English from reference vocab when aligned IDs exist
+                    if (enVocab) {
+                      for (const cat of enVocab.categories) {
+                        const match = cat.items.find(i=> i.id === it.id);
+                        if (match) { enTerm = match.term; break; }
+                      }
+                    }
+                    // Fallback to inline translation metadata (schema v2)
+                    if (!enTerm && it.translations && typeof it.translations.en === 'string') {
+                      enTerm = it.translations.en;
+                    }
+                  }
+                  return (
+                    <button key={it.id} type="button" onClick={()=>toggleItem(it.id)} className={`text-left border rounded p-2 text-sm hover:border-indigo-500 ${active?"bg-indigo-600 text-white border-indigo-600":"bg-white"}`}>
+                      <div className="font-semibold">{it.term}</div>
+                      <div className="opacity-80 text-xs">{it.cefr}</div>
+                      {enTerm && <div className="mt-0.5 text-[11px] italic opacity-70">EN: {enTerm}</div>}
+                      {it.hint && <div className="mt-1 text-[11px] opacity-70 line-clamp-2">{it.hint}</div>}
+                    </button>
+                  );
+                })}
+              </div>
+              {sampledItems.length===0 && scenarioId && <div className="text-sm text-gray-600 mt-1">{t('common.noItems')}</div>}
+            </>
+          )}
+          {!scenarioId && <div className="text-sm text-gray-500 italic">{t('dialogue.pickScenarioHint')}</div>}
           <div className="mt-4">
             <h3 className="font-medium mb-1">{t('dialogue.yourOwnWords')}</h3>
             <textarea
               value={customWordsRaw}
               onChange={e=>setCustomWordsRaw(e.target.value)}
-              placeholder="Enter words or phrases separated by commas or new lines"
+              placeholder={t('dialogue.customWords.placeholder')}
               className="w-full border rounded p-2 h-28 text-sm"
             />
             <div className="text-xs text-gray-500 mt-1">{t('dialogue.yourOwnWords.hint')}</div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
-          <button onClick={()=>generate("generate")} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50" disabled={loading || (selectedItems.length===0 && customWordsCount===0)}>{loading?"Working…":t('common.generate')}</button>
-          <button onClick={()=>generate("refine")} className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50" disabled={loading || !dialogue}>{t('common.refine')}</button>
+          <button onClick={()=>generate("generate")} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50" disabled={loading}>{loading?t('common.loading'):t('common.generate')}</button>
           <div className="text-sm opacity-70">{t('labels.selected')}: {selectedItems.length} | {t('labels.custom')}: {customWordsCount}</div>
           {error && <div className="text-red-600 text-sm whitespace-pre-wrap">{error}</div>}
         </div>
@@ -535,87 +651,72 @@ function DialogueBuilderInner() {
 
       {dialogue && (
         <section className="space-y-4">
-          {/* Manual Voice Selection Section (moved post-generation) */}
-          <div className="border rounded p-4 bg-white shadow-sm">
-            <h2 className="font-medium mb-2">{t('dialogue.chooseVoicesTitle')}</h2>
-            <p className="text-xs text-gray-600 mb-3">{t('dialogue.chooseVoicesDescription')}</p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {(VOICE_CANDIDATES[lang] || VOICE_CANDIDATES.default).map(vc => {
-                const isA = vc === voiceA;
-                const isB = vc === voiceB;
-                return (
-                  <div key={vc} className={`border rounded p-2 text-xs flex flex-col gap-2 ${isA || isB ? 'bg-indigo-50 border-indigo-400' : 'bg-white'}`}>
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-[11px] uppercase tracking-wide">{vc}</span>
-                      {(isA || isB) && <span className="text-[10px] px-1 py-0.5 rounded bg-indigo-600 text-white">{isA? 'A':'B'}</span>}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={async ()=> {
-                        try {
-                          setVoiceError(null);
-                          const text = demoSentence(lang);
-                          const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ text, lang, voice: vc, speed: 0.95, format: 'mp3' }) });
-                          if (!res.ok) throw new Error(await res.text());
-                          const blob = await res.blob();
-                          const url = URL.createObjectURL(blob);
-                          const audio = new Audio(url);
-                          audio.play().catch(()=>undefined);
-                        } catch (e) {
-                          setVoiceError(e instanceof Error ? e.message : String(e));
-                        }
-                      }}
-                      className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
-                    >Demo</button>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={()=> {
-                          if (voiceB === vc) { setVoiceB(voiceA); }
-                          setVoiceA(vc);
-                        }}
-                        className={`flex-1 px-2 py-1 rounded border text-[11px] ${isA? 'bg-indigo-600 text-white border-indigo-600':'bg-white hover:bg-indigo-50'}`}
-                      >Set A</button>
-                      <button
-                        type="button"
-                        onClick={()=> {
-                          if (voiceA === vc) { setVoiceA(voiceB); }
-                          setVoiceB(vc);
-                        }}
-                        className={`flex-1 px-2 py-1 rounded border text-[11px] ${isB? 'bg-indigo-600 text-white border-indigo-600':'bg-white hover:bg-indigo-50'}`}
-                      >Set B</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {voiceError && <div className="text-xs text-red-600 mt-2">{voiceError}</div>}
-            <div className="mt-2 text-xs text-gray-600">{t('dialogue.currentVoices')}: A → <strong>{voiceA}</strong> | B → <strong>{voiceB}</strong></div>
-          </div>
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">{t('dialogue.dialogueTitle')}</h2>
-            {dialogue.notes && <div className="text-sm italic opacity-75 max-w-md">{dialogue.notes}</div>}
+            {dialogue.notes && <div className="text-sm italic opacity-75 max-w-md hidden md:block">{dialogue.notes}</div>}
           </div>
           <div className="space-y-3">
-            {dialogue.turns.map((t, i) => (
+            {dialogue.turns.map((turn, i) => (
               <div key={i} className="border rounded p-3 bg-white shadow-sm">
                 <div className="flex justify-between items-center mb-1">
-                  <div className="font-semibold">{t.speaker || (i % 2 === 0 ? "A" : "B")}</div>
-                  <div className="flex gap-2 items-center">
-                    <button onClick={()=>ttsTurn(i, t.text, t.speaker || (i % 2 === 0 ? "A" : "B"))} className="text-xs px-2 py-1 rounded bg-indigo-600 text-white disabled:opacity-50" disabled={playingTurn!==null || compiling}>{playingTurn===i?"…":"TTS"}</button>
-                    <audio ref={(el) => { audioRefs.current[i] = el; }} className="hidden" />
-                  </div>
+                  <div className="font-semibold">{turn.speaker || (i % 2 === 0 ? "A" : "B")}</div>
+                  {finalized && (
+                    <div className="flex gap-2 items-center">
+                      <button onClick={()=>ttsTurn(i, turn.text, turn.speaker || (i % 2 === 0 ? "A" : "B"))} className="text-xs px-2 py-1 rounded bg-indigo-600 text-white disabled:opacity-50" disabled={playingTurn!==null}>{playingTurn===i?"…":t('common.audio')}</button>
+                      <button onClick={()=>downloadTurn(i, turn.text, turn.speaker || (i % 2 === 0 ? "A" : "B"))} className="text-xs px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50">{t('common.download')}</button>
+                      <audio ref={(el) => { audioRefs.current[i] = el; }} className="hidden" />
+                    </div>
+                  )}
                 </div>
-                <div className="whitespace-pre-wrap leading-relaxed">{t.text}</div>
-                {t.translation_en && <div className="mt-1 text-sm text-gray-600">{t.translation_en}</div>}
-                {t.vocabRefs?.length>0 && (
+                <div className="whitespace-pre-wrap leading-relaxed">{turn.text}</div>
+                {turn.translation_en && <div className="mt-1 text-sm text-gray-600">{turn.translation_en}</div>}
+                {turn.vocabRefs?.length>0 && (
                   <div className="mt-2 flex flex-wrap gap-1 text-xs">
-                    {t.vocabRefs.map(v=> <span key={v} className="px-2 py-0.5 rounded bg-gray-100 border text-gray-700">{v}</span>)}
+                    {turn.vocabRefs.map(v=> <span key={v} className="px-2 py-0.5 rounded bg-gray-100 border text-gray-700">{v}</span>)}
                   </div>
                 )}
               </div>
             ))}
           </div>
+          <div className="mt-6 border-t pt-4 space-y-4">
+            <div>
+              <h3 className="font-medium mb-1">{t('dialogue.refineTitle')}</h3>
+              <textarea
+                value={refineNotes}
+                onChange={e=>setRefineNotes(e.target.value)}
+                placeholder={t('dialogue.refinePlaceholder')}
+                className="w-full border rounded p-2 h-32 text-sm"
+              />
+              <div className="flex gap-2 mt-2">
+                <button onClick={()=>generate("refine")} className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50" disabled={loading || !dialogue}>{loading?t('common.loading'):t('common.refine')}</button>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {!finalized && (
+                <button
+                  type="button"
+                  onClick={()=> { setFinalized(true); setShowVoiceModal(true); }}
+                  className="text-sm px-3 py-1.5 rounded bg-emerald-600 text-white"
+                >{t('dialogue.finalizeCTA')}</button>
+              )}
+              {finalized && (
+                <button
+                  type="button"
+                  onClick={()=> setShowVoiceModal(true)}
+                  className="text-sm px-3 py-1.5 rounded border border-gray-300 bg-white hover:bg-gray-50"
+                >{t('dialogue.chooseVoicesButton')}</button>
+              )}
+              {dialogue && (
+                <button
+                  type="button"
+                  onClick={openTranslateModal}
+                  className="text-sm px-3 py-1.5 rounded border border-gray-300 bg-white hover:bg-gray-50"
+                  title={t('dialogue.translateExplainHint')}
+                >{t('dialogue.translateExplain')}</button>
+              )}
+            </div>
+          </div>
+          {finalized && (
           <div className="mt-4 border-t pt-4">
             <h3 className="font-medium mb-2">{t('dialogue.playbackSettings')}</h3>
             <div className="flex flex-wrap gap-4 items-center">
@@ -627,26 +728,190 @@ function DialogueBuilderInner() {
                 <select value={ttsFormat} onChange={e=>setTtsFormat(e.target.value as "mp3"|"ogg"|"wav")} className="border rounded p-1">
                   <option value="mp3">MP3</option>
                   <option value="ogg">OGG</option>
-                  <option value="wav">WAV (adds 1s gaps)</option>
+                  <option value="wav">WAV</option>
                 </select>
               </label>
-              <label className="flex items-center gap-2 text-sm">Gap
+              <label className="flex items-center gap-2 text-sm">{t('dialogue.gap')}
                 <input type="range" min={0} max={3} step={0.25} value={gapSeconds} onChange={e=>setGapSeconds(parseFloat(e.target.value))} />
                 <span className="tabular-nums w-8 text-right">{gapSeconds.toFixed(2)}s</span>
               </label>
               <div className="text-xs text-gray-500 max-w-xs space-y-1">
-                <div>Voices: A: {voiceA} | B: {voiceB}</div>
-                <div className="opacity-70">You manually picked these from the preview list above.</div>
-                <div>Audio cached per text/voice/speed. Use WAV for reliable gaps (MP3 concat may collapse them).</div>
+                <div>{t('dialogue.voicesLabel')}: A: {voiceA} | B: {voiceB}</div>
+                <div className="opacity-70">{t('dialogue.voicesPickedNote')}</div>
+                <div>{t('dialogue.audioCacheNote')}</div>
               </div>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button onClick={downloadFullDialogue} disabled={compiling || !dialogue} className="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50 text-sm">{compiling?`Compiling ${compileProgress.done}/${compileProgress.total}`:t('dialogue.downloadFull')}</button>
+              <button onClick={downloadFullDialogue} disabled={compiling || !dialogue} className="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50 text-sm">{compiling?t('dialogue.compiling', { done: compileProgress.done, total: compileProgress.total }):t('dialogue.downloadFull')}</button>
               {compiling && <div className="text-xs text-gray-600">{t('dialogue.buildingCombined')}</div>}
               {!compiling && error && <div className="text-xs text-red-600 max-w-sm">{error}</div>}
             </div>
           </div>
+          )}
         </section>
+      )}
+      </div>
+      {showCustomScenarioModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 space-y-4">
+            <h2 className="text-lg font-semibold">{t('dialogue.customScenarioTitle')}</h2>
+            <textarea
+              autoFocus
+              value={customScenarioDraft}
+              onChange={e=> setCustomScenarioDraft(e.target.value)}
+              placeholder={t('dialogue.customScenarioPlaceholder')}
+              className="w-full border rounded p-3 h-40 text-sm resize-none"
+            />
+            {customScenarioError && <div className="text-xs text-red-600">{customScenarioError}</div>}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                className="px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50"
+                onClick={()=> {
+                  setShowCustomScenarioModal(false);
+                  if (prevScenarioId) {
+                    setScenarioId(prevScenarioId);
+                  } else {
+                    setScenarioId('');
+                  }
+                }}
+              >{t('common.cancel')}</button>
+              <button
+                type="button"
+                className="px-4 py-1.5 text-sm rounded bg-indigo-600 text-white disabled:opacity-50"
+                onClick={()=> {
+                  const trimmed = customScenarioDraft.trim();
+                  if (trimmed.length < 5) { setCustomScenarioError(t('errors.moreDetail')); return; }
+                  setCustomScenario(trimmed);
+                  setShowCustomScenarioModal(false);
+                }}
+              >{t('common.confirm')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showVoiceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{t('dialogue.chooseVoicesTitle')}</h2>
+              <button onClick={()=> setShowVoiceModal(false)} className="text-sm px-3 py-1 rounded border border-gray-300 hover:bg-gray-50">{t('common.close')}</button>
+            </div>
+            <p className="text-sm text-gray-600">{t('dialogue.chooseVoicesDescription')}</p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div
+                onDragOver={(e)=> { e.preventDefault(); setDragOverA(true); }}
+                onDragLeave={()=> setDragOverA(false)}
+                onDrop={(e)=> {
+                  e.preventDefault();
+                  setDragOverA(false);
+                  const v = e.dataTransfer.getData('text/voice');
+                  if (!v) return;
+                  if (voiceB === v) { setVoiceB(voiceA); }
+                  setVoiceA(v);
+                }}
+                className={`relative rounded border-2 p-4 h-24 flex flex-col items-center justify-center text-center transition ${dragOverA ? 'border-indigo-500 bg-indigo-50' : 'border-dashed border-gray-300 bg-gray-50'}`}
+              >
+                <div className="text-xs uppercase tracking-wide font-semibold text-gray-600 mb-1">{t('dialogue.speakerA')}</div>
+                <div className="font-bold text-sm">{voiceA || <span className="italic text-gray-500">{t('dialogue.dragVoiceHere')}</span>}</div>
+              </div>
+              <div
+                onDragOver={(e)=> { e.preventDefault(); setDragOverB(true); }}
+                onDragLeave={()=> setDragOverB(false)}
+                onDrop={(e)=> {
+                  e.preventDefault();
+                  setDragOverB(false);
+                  const v = e.dataTransfer.getData('text/voice');
+                  if (!v) return;
+                  if (voiceA === v) { setVoiceA(voiceB); }
+                  setVoiceB(v);
+                }}
+                className={`relative rounded border-2 p-4 h-24 flex flex-col items-center justify-center text-center transition ${dragOverB ? 'border-indigo-500 bg-indigo-50' : 'border-dashed border-gray-300 bg-gray-50'}`}
+              >
+                <div className="text-xs uppercase tracking-wide font-semibold text-gray-600 mb-1">{t('dialogue.speakerB')}</div>
+                <div className="font-bold text-sm">{voiceB || <span className="italic text-gray-500">{t('dialogue.dragVoiceHere')}</span>}</div>
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">{t('dialogue.chooseVoicesDescription')}</div>
+            <div className="flex flex-wrap gap-2">
+              {(VOICE_CANDIDATES[lang] || VOICE_CANDIDATES.default).map(vc => {
+                const assigned = vc === voiceA || vc === voiceB;
+                return (
+                  <button
+                    key={vc}
+                    type="button"
+                    draggable
+                    onDragStart={(e)=> {
+                      e.dataTransfer.setData('text/voice', vc);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onClick={async ()=> {
+                      try {
+                        setVoiceError(null);
+                        const key = `${lang}|${vc}`;
+                        let url = voiceDemoCache.current.get(key);
+                        if (!url) {
+                          const staticPath = `/demos/${lang}_${vc}.mp3`;
+                          try {
+                            const head = await fetch(staticPath, { method: 'HEAD' });
+                            if (head.ok) url = staticPath;
+                          } catch {/* ignore */}
+                          if (!url) {
+                            const text = demoSentence(lang);
+                            const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ text, lang, voice: vc, speed: 0.95, format: 'mp3' }) });
+                            if (!res.ok) throw new Error(await res.text());
+                            const blob = await res.blob();
+                            url = URL.createObjectURL(blob);
+                          }
+                          voiceDemoCache.current.set(key, url);
+                        }
+                        const audio = new Audio(url);
+                        audio.play().catch(()=>undefined);
+                      } catch (e) {
+                        setVoiceError(e instanceof Error ? e.message : String(e));
+                      }
+                    }}
+                    className={`px-3 py-2 rounded border text-xs font-semibold tracking-wide uppercase select-none transition shadow-sm ${assigned ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white hover:bg-indigo-50 border-gray-300'} focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                    title={t('dialogue.voiceChipTitle')}
+                  >{vc}</button>
+                );
+              })}
+            </div>
+            {voiceError && <div className="text-xs text-red-600 mt-1">{voiceError}</div>}
+            <div className="flex justify-end pt-2">
+              <button onClick={()=> setShowVoiceModal(false)} className="px-4 py-1.5 rounded bg-indigo-600 text-white text-sm">{t('common.done')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTranslateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{t('dialogue.translateExplain')}</h2>
+              <div className="flex items-center gap-2">
+                <button onClick={copyAllTranslated} className="text-sm px-3 py-1 rounded border border-gray-300 hover:bg-gray-50">{t('dialogue.copyAll')}</button>
+                <button onClick={()=> setShowTranslateModal(false)} className="text-sm px-3 py-1 rounded border border-gray-300 hover:bg-gray-50">{t('common.close')}</button>
+              </div>
+            </div>
+            {translateLoading && <div className="text-sm text-gray-600">{t('common.loading')}</div>}
+            {translateError && <div className="text-sm text-red-600">{translateError}</div>}
+            {translated && (
+              <div className="space-y-3 select-text">
+                {translated.turns.map((tr, i) => (
+                  <div key={i} className="border rounded p-3 bg-white">
+                    <div className="text-xs font-semibold mb-1">{tr.speaker}</div>
+                    <div className="text-sm whitespace-pre-wrap">{tr.original}</div>
+                    <div className="text-sm mt-1 text-gray-700"><span className="font-medium">{t('dialogue.translation')}:</span> {tr.translation}</div>
+                    {tr.notes && <div className="text-xs mt-1 text-gray-500"><span className="font-medium">{t('dialogue.explanation')}:</span> {tr.notes}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </main>
   );

@@ -15,6 +15,8 @@ interface DialogueBody {
   instructions?: string;     // extra user guidance
   action?: "generate" | "refine"; // refine allows sending previous dialogue
   previousDialogue?: DialogueResponse; // required if action=refine
+  temperature?: number;      // optional creativity control (0-1.5). If absent, server default applies.
+  top_p?: number;            // optional nucleus sampling parameter (0-1). If absent, server default applies.
 }
 
 interface DialogueTurn {
@@ -101,6 +103,49 @@ async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Pro
   throw new Error("Dialogue API failed after retries");
 }
 
+// Cache the resolved text model for this process to avoid repeated probes
+let CACHED_TEXT_MODEL: string | null = null;
+
+const ALLOWED_TEXT_MODELS = [
+  'gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'
+];
+
+async function resolveTextModel(headers: Record<string,string>, opts?: { strict?: boolean }): Promise<string> {
+  const strict = !!opts?.strict;
+  // 1) Explicit env override if allowed
+  const envTextModel = process.env.OPENAI_TEXT_MODEL?.trim();
+  if (envTextModel && ALLOWED_TEXT_MODELS.includes(envTextModel)) {
+    if (strict && !['gpt-4o','gpt-4.1'].includes(envTextModel)) {
+      // Strict requires one of the better models only
+      throw new Error("Strict better-model required (gpt-4o or gpt-4.1), but OPENAI_TEXT_MODEL is set to a different model.");
+    }
+    CACHED_TEXT_MODEL = envTextModel;
+    return envTextModel;
+  }
+  // 2) Cached choice
+  if (CACHED_TEXT_MODEL) return CACHED_TEXT_MODEL;
+  const url = "https://api.openai.com/v1/chat/completions";
+  // 3) Probe preferred order: 4o, then 4.1; (mini variants are safe default)
+  const candidates = ['gpt-4o', 'gpt-4.1'] as const;
+  for (const model of candidates) {
+    try {
+      const probePayload = { model, messages: [{ role: 'user', content: 'ok' }], max_tokens: 1 } as const;
+      const r = await fetchWithRetry(url, { method: 'POST', headers, body: JSON.stringify(probePayload) }, 1);
+      if (r.ok) {
+        CACHED_TEXT_MODEL = model;
+        return model;
+      }
+    } catch {/* ignore and try next */}
+  }
+  // 4) If strict, do not fallback
+  if (strict) {
+    throw new Error('Strict better-model required, but neither gpt-4o nor gpt-4.1 are available.');
+  }
+  // Otherwise fallback default
+  CACHED_TEXT_MODEL = 'gpt-4.1-mini';
+  return CACHED_TEXT_MODEL;
+}
+
 export async function POST(req: NextRequest) {
   const rawKey = process.env.OPENAI_API_KEY || "";
   const apiKey = rawKey.trim();
@@ -183,10 +228,31 @@ Requirements (STRICT):
   if (project) headers["OpenAI-Project"] = project;
   if (org) headers["OpenAI-Organization"] = org;
 
+  const requireBetter = /^(1|true)$/i.test((process.env.OPENAI_REQUIRE_BETTER || '').trim());
+  let resolvedTextModel: string;
+  try {
+    resolvedTextModel = await resolveTextModel(headers, { strict: requireBetter });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return new Response(JSON.stringify({ error: msg, hint: 'Grant access to gpt-4o or gpt-4.1 or unset OPENAI_REQUIRE_BETTER' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  // Server-side creativity controls with sane defaults and env overrides
+  function clamp(n: number, lo: number, hi: number) { return Math.max(lo, Math.min(hi, n)); }
+  const envTempRaw = (process.env.OPENAI_TEMPERATURE || "").trim();
+  const envTopPRaw = (process.env.OPENAI_TOP_P || "").trim();
+  const defaultTemp = envTempRaw ? clamp(parseFloat(envTempRaw), 0, 1.5) : 0.8; // increased default for more creativity
+  const defaultTopP = envTopPRaw ? clamp(parseFloat(envTopPRaw), 0, 1) : undefined;
+  const reqTemp = typeof body.temperature === 'number' ? clamp(body.temperature, 0, 1.5) : undefined;
+  const reqTopP = typeof body.top_p === 'number' ? clamp(body.top_p, 0, 1) : undefined;
+  const temperature = reqTemp ?? defaultTemp;
+  const top_p = reqTopP ?? defaultTopP;
+
   const payload = {
-    model: "gpt-4o-mini",
+    model: resolvedTextModel,
     messages,
-    temperature: 0.65,
+    temperature,
+    ...(typeof top_p === 'number' ? { top_p } : {}),
     response_format: { type: "json_object" }
   } as const;
 
@@ -241,7 +307,8 @@ Requirements (STRICT):
         { role: 'user', content: `Your previous draft response was mostly in ${LANGUAGE_NAMES[detected] || detected}, but the required target language is ${lang} (${langName}). Regenerate the ENTIRE dialogue strictly in ${langName}, preserving pedagogical intent and vocabulary IDs. Output ONLY valid JSON again.` }
       ];
       try {
-        const retryPayload = { model: 'gpt-4o-mini', messages, temperature: 0.55, response_format: { type: 'json_object' } } as const;
+  // Use a slightly lower temperature for corrective retry to improve adherence while keeping some variability
+  const retryPayload = { model: resolvedTextModel, messages, temperature: Math.max(0, Math.min(1.0, (typeof temperature === 'number' ? temperature - 0.15 : 0.65))), response_format: { type: 'json_object' } } as const;
         resp = await fetchWithRetry(url, { method: 'POST', headers, body: JSON.stringify(retryPayload) });
         if (resp.ok) {
           const retryData = await resp.json();
@@ -257,9 +324,9 @@ Requirements (STRICT):
         console.warn('Retry after mismatch failed', e);
       }
     }
-    return new Response(JSON.stringify(parsed), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify(parsed), { status: 200, headers: { "Content-Type": "application/json", "X-Text-Model": resolvedTextModel, ...(requireBetter ? { 'X-Strict-Better': '1' } : {}) } });
   } catch {
     // Fallback: wrap raw text (not ideal, but prevents total failure)
-    return new Response(JSON.stringify({ scenario: scenarioId, level, turns: [], usedItems: [], notes: "Model returned non-JSON" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ scenario: scenarioId, level, turns: [], usedItems: [], notes: "Model returned non-JSON" }), { status: 200, headers: { "Content-Type": "application/json", "X-Text-Model": resolvedTextModel, ...(requireBetter ? { 'X-Strict-Better': '1' } : {}) } });
   }
 }

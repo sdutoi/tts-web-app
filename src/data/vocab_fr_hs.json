@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "language": "fr",
+  "version": 2,
+  "generatedAt": "2025-09-28T00:00:00Z",
+  "categories": [
+    {
+      "id": "school_life",
+      "label": "Vie au lycée",
+      "items": [
+        { "id": "homeroom", "term": "heure de vie de classe", "cefr": "A2", "tags": ["ecole"], "example": "On a heure de vie de classe demain.", "translations": { "en": "homeroom / class time" } },
+        { "id": "homework", "term": "devoirs", "cefr": "A1", "tags": ["ecole"], "example": "J'ai beaucoup de devoirs ce soir.", "translations": { "en": "homework" } },
+        { "id": "pop_quiz", "term": "interro surprise", "cefr": "B1", "tags": ["evaluation"], "example": "Il y a une interro surprise en maths.", "translations": { "en": "pop quiz" } },
+        { "id": "group_project", "term": "projet de groupe", "cefr": "A2", "tags": ["travail"], "example": "Notre projet de groupe est pour vendredi.", "translations": { "en": "group project" } },
+        { "id": "study_hall", "term": "étude surveillée", "cefr": "B1", "tags": ["temps"], "example": "Je vais en étude surveillée après les cours.", "translations": { "en": "study hall" } },
+        { "id": "field_trip", "term": "sortie scolaire", "cefr": "A2", "tags": ["evenement"], "example": "La sortie scolaire est au musée d'art.", "translations": { "en": "field trip" } },
+        { "id": "senior_prank", "term": "blague des terminales", "cefr": "B2", "tags": ["culture"], "example": "Ils préparent la blague des terminales.", "translations": { "en": "senior prank" } },
+        { "id": "class_rep", "term": "délégué de classe", "cefr": "A2", "tags": ["role"], "example": "On élit le délégué de classe aujourd'hui.", "translations": { "en": "class representative" } },
+        { "id": "lunch_pass", "term": "carte de cantine", "cefr": "A1", "tags": ["admin"], "example": "J'ai oublié ma carte de cantine.", "translations": { "en": "cafeteria card" } },
+        { "id": "ace_the_test", "term": "cartonner à un contrôle", "cefr": "B1", "tags": ["expression"], "example": "J'ai cartonné à l'interro de physique.", "translations": { "en": "ace the test" }, "register": "casual" },
+        { "id": "cram_night", "term": "nuit de bachotage", "cefr": "B2", "tags": ["expression"], "example": "Nuit de bachotage avant le DS.", "translations": { "en": "cram night" } },
+        { "id": "deadline", "term": "date limite", "cefr": "A2", "tags": ["ecole","admin"], "example": "La date limite pour rendre l'essai est vendredi.", "translations": { "en": "deadline" } }
+      ]
+    },
+    {
+      "id": "friend_groups",
+      "label": "Groupes d'amis & drames",
+      "items": [
+  { "id": "inside_joke", "term": "blague d'initiés", "cefr": "B1", "tags": ["social"], "example": "C'était une blague d'initiés, t'inquiète.", "hint": "On dit aussi 'private joke' (anglicisme)", "translations": { "en": "inside joke" } },
+        { "id": "group_chat", "term": "groupe de discussion", "cefr": "A2", "tags": ["reseaux"], "example": "On a un groupe de discussion pour la classe.", "translations": { "en": "group chat" } },
+        { "id": "ship_couple", "term": "shipper un couple", "cefr": "B2", "tags": ["slang"], "example": "Ils ont commencé à shipper ces deux-là.", "hint": "souhaiter qu'ils soient en couple", "translations": { "en": "to ship a couple" } },
+        { "id": "spill_tea", "term": "balancer les potins", "cefr": "B2", "tags": ["slang"], "example": "Vas-y, balance les potins !", "translations": { "en": "spill the tea / share gossip" } },
+        { "id": "no_drama", "term": "pas de drama", "cefr": "A2", "tags": ["slang"], "example": "Ce week-end, pas de drama.", "translations": { "en": "no drama" } },
+        { "id": "bestie", "term": "bestie", "cefr": "A1", "tags": ["ami"], "example": "Je viens avec ma bestie.", "hint": "meilleure amie (familier)", "translations": { "en": "bestie (best friend)" } },
+        { "id": "hang_out", "term": "traîner ensemble", "cefr": "A2", "tags": ["social"], "example": "On traîne ensemble au skatepark.", "translations": { "en": "to hang out together" } },
+        { "id": "no_cap", "term": "sans mytho", "cefr": "B2", "tags": ["slang"], "example": "Sans mytho, c'était incroyable.", "translations": { "en": "no cap (no lie)" } }
+      ]
+    },
+    {
+      "id": "gaming_esports",
+      "label": "Jeux vidéo & e-sport",
+      "items": [
+        { "id": "ranked_match", "term": "partie classée", "cefr": "B1", "tags": ["gaming"], "example": "Je lance une partie classée.", "translations": { "en": "ranked match" } },
+        { "id": "carry_team", "term": "carry l'équipe", "cefr": "B2", "tags": ["gaming","slang"], "example": "Il a carry l'équipe en finale.", "translations": { "en": "carry the team" } },
+        { "id": "nerf_buff", "term": "nerf / buff", "cefr": "B1", "tags": ["gaming"], "example": "Ils vont nerf ce perso et buff l'autre.", "translations": { "en": "nerf / buff" } },
+        { "id": "LAN_party", "term": "LAN party", "cefr": "A2", "tags": ["evenement"], "example": "On organise une LAN party samedi.", "translations": { "en": "LAN party" } },
+        { "id": "loot_box", "term": "loot box", "cefr": "A2", "tags": ["gaming"], "example": "J'ai ouvert une loot box rare.", "translations": { "en": "loot box" } },
+        { "id": "ping_latency", "term": "ping / latence", "cefr": "B1", "tags": ["tech"], "example": "Le ping est trop haut, ça lag.", "translations": { "en": "ping / latency" } },
+        { "id": "speedrun", "term": "speedrun", "cefr": "B1", "tags": ["gaming"], "example": "Je tente un speedrun de ce jeu.", "translations": { "en": "speedrun" } }
+      ]
+    },
+    {
+      "id": "music_content",
+      "label": "Musique, contenus & créateurs",
+      "items": [
+        { "id": "drop_new_track", "term": "sortir un nouveau son", "cefr": "B1", "tags": ["musique"], "example": "Il a sorti un nouveau son hier.", "translations": { "en": "drop a new track" } },
+        { "id": "playlist_mood", "term": "playlist d'humeur", "cefr": "A2", "tags": ["musique"], "example": "J'ai une playlist d'humeur pour réviser.", "translations": { "en": "mood playlist" } },
+        { "id": "fandom", "term": "fandom", "cefr": "A2", "tags": ["culture"], "example": "Le fandom de ce groupe est énorme.", "translations": { "en": "fandom" } },
+        { "id": "content_creator", "term": "créateur de contenu", "cefr": "B1", "tags": ["reseaux"], "example": "Ce créateur de contenu est inspirant.", "translations": { "en": "content creator" } },
+        { "id": "go_viral", "term": "devenir viral", "cefr": "B1", "tags": ["reseaux"], "example": "Cette vidéo est devenue virale.", "hint": "mieux: 'est devenue virale'", "translations": { "en": "go viral" } },
+        { "id": "challenge_trend", "term": "challenge / tendance", "cefr": "A2", "tags": ["reseaux"], "example": "On essaie le nouveau challenge ?", "translations": { "en": "challenge / trend" } },
+  { "id": "be_a_fan_of", "term": "être fan de", "cefr": "A2", "tags": ["culture","expression"], "example": "Je suis fan de ce groupe depuis le collège.", "translations": { "en": "to be a fan of" } },
+        { "id": "binge_watch", "term": "binge-watcher", "cefr": "B1", "tags": ["culture"], "example": "On a binge-watché toute la saison.", "translations": { "en": "to binge-watch" } }
+      ]
+    },
+    {
+      "id": "sports_clubs",
+      "label": "Sports & clubs",
+      "items": [
+        { "id": "tryouts", "term": "sélections", "cefr": "B1", "tags": ["sport"], "example": "Les sélections sont la semaine prochaine.", "translations": { "en": "tryouts" } },
+        { "id": "practice", "term": "entraînement", "cefr": "A2", "tags": ["sport"], "example": "On a entraînement après les cours.", "translations": { "en": "practice / training" } },
+        { "id": "captain", "term": "capitaine", "cefr": "A2", "tags": ["role"], "example": "La capitaine est en terminale.", "translations": { "en": "captain" } },
+        { "id": "club_fair", "term": "forum des clubs", "cefr": "A2", "tags": ["evenement"], "example": "Le forum des clubs est vendredi.", "translations": { "en": "club fair" } },
+        { "id": "away_game", "term": "match à l'extérieur", "cefr": "B1", "tags": ["sport"], "example": "On a un match à l'extérieur samedi.", "translations": { "en": "away game" } },
+        { "id": "pep_rally", "term": "rassemblement de soutien", "cefr": "B1", "tags": ["culture"], "example": "Il y a un rassemblement de soutien au gymnase.", "translations": { "en": "pep rally" } },
+        { "id": "after_practice_snack", "term": "goûter d'après entraînement", "cefr": "A2", "tags": ["habitude"], "example": "Goûter d'après entraînement au kiosque.", "translations": { "en": "post-practice snack" } }
+      ]
+    },
+    {
+      "id": "future_plans",
+      "label": "Orientation & plans futurs",
+      "items": [
+        { "id": "career_fair", "term": "forum des métiers", "cefr": "B1", "tags": ["orientation"], "example": "On va au forum des métiers demain.", "translations": { "en": "career fair" } },
+        { "id": "college_app", "term": "dossier Parcoursup", "cefr": "B1", "tags": ["admin"], "example": "Mon dossier Parcoursup est presque prêt.", "translations": { "en": "college application file (Parcoursup)" } },
+        { "id": "gap_year", "term": "année de césure", "cefr": "B2", "tags": ["plan"], "example": "Je pense à une année de césure.", "translations": { "en": "gap year" } },
+        { "id": "internship", "term": "stage d'observation", "cefr": "A2", "tags": ["experience"], "example": "Mon stage d'observation est en février.", "translations": { "en": "job shadow / observation internship" } },
+        { "id": "portfolio", "term": "portfolio", "cefr": "B1", "tags": ["projet"], "example": "Je finalise mon portfolio.", "translations": { "en": "portfolio" } },
+        { "id": "open_day", "term": "journée portes ouvertes", "cefr": "A2", "tags": ["orientation"], "example": "La journée portes ouvertes est samedi.", "translations": { "en": "open day" } }
+      ]
+    },
+    {
+      "id": "after_school",
+      "label": "Après les cours & sorties",
+      "items": [
+        { "id": "mall_meetup", "term": "rdv au centre commercial", "cefr": "A2", "tags": ["sortie"], "example": "Rdv au centre commercial après 16h ?", "translations": { "en": "meet at the mall" } },
+        { "id": "movie_night", "term": "soirée ciné", "cefr": "A2", "tags": ["sortie"], "example": "On se fait une soirée ciné ?", "translations": { "en": "movie night" } },
+        { "id": "escape_room", "term": "escape game", "cefr": "B1", "tags": ["sortie"], "example": "On réserve un escape game pour samedi.", "translations": { "en": "escape room" } },
+        { "id": "skatepark", "term": "skatepark", "cefr": "A2", "tags": ["sport"], "example": "On se retrouve au skatepark.", "translations": { "en": "skatepark" } },
+        { "id": "bowling", "term": "bowling", "cefr": "A1", "tags": ["sortie"], "example": "Bowling ce soir ?", "translations": { "en": "bowling" } },
+        { "id": "grab_a_bite", "term": "prendre un truc à manger", "cefr": "A2", "tags": ["expression"], "example": "On prend un truc à manger ?", "translations": { "en": "grab a bite" }, "register": "casual" }
+      ]
+    },
+    {
+      "id": "digital_life",
+      "label": "Vie numérique & sécurité",
+      "items": [
+        { "id": "screen_time", "term": "temps d'écran", "cefr": "A2", "tags": ["tech"], "example": "Je limite mon temps d'écran le soir.", "translations": { "en": "screen time" } },
+        { "id": "two_factor", "term": "double authentification", "cefr": "B1", "tags": ["securite"], "example": "Active la double authentification.", "translations": { "en": "two-factor authentication" } },
+        { "id": "privacy_settings", "term": "paramètres de confidentialité", "cefr": "B1", "tags": ["securite"], "example": "Vérifie tes paramètres de confidentialité.", "translations": { "en": "privacy settings" } },
+        { "id": "cyberbullying", "term": "cyberharcèlement", "cefr": "B2", "tags": ["securite"], "example": "Le collège fait une campagne contre le cyberharcèlement.", "translations": { "en": "cyberbullying" } },
+        { "id": "report_account", "term": "signaler un compte", "cefr": "B1", "tags": ["reseaux"], "example": "J'ai signalé un compte fake.", "translations": { "en": "report an account" } },
+        { "id": "post_with_care", "term": "poster avec prudence", "cefr": "A2", "tags": ["conseil"], "example": "Toujours poster avec prudence.", "translations": { "en": "post with care" } }
+      ]
+    }
+  ]
+}

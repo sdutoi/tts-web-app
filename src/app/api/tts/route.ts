@@ -100,11 +100,29 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Resolve model (parameterized via env). Allowlist to avoid surprises.
+    const ALLOWED_TTS_MODELS = [
+      'gpt-4o-mini-tts',
+      'gpt-4o-audio-preview',
+      'gpt-4o-realtime-preview', // if used in future (non-stream mode)
+    ];
+    const envModel = process.env.OPENAI_TTS_MODEL?.trim();
+    const requireBetterTts = /^(1|true)$/i.test((process.env.OPENAI_REQUIRE_BETTER_TTS || '').trim());
+    let model = envModel && ALLOWED_TTS_MODELS.includes(envModel) ? envModel : '';
+    if (model) {
+      if (requireBetterTts && model !== 'gpt-4o-audio-preview') {
+        return new Response(JSON.stringify({ error: 'Strict better TTS model required (gpt-4o-audio-preview) but OPENAI_TTS_MODEL is set otherwise.' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+      }
+    } else {
+      // prefer the better audio preview model in strict/non-strict
+      model = requireBetterTts ? 'gpt-4o-audio-preview' : 'gpt-4o-mini-tts';
+    }
+
     // Call OpenAI TTS
     // Using fetch to avoid SDK dependency; adjust endpoint if OpenAI changes.
     const openaiUrl = "https://api.openai.com/v1/audio/speech";
     const payload = {
-      model: "gpt-4o-mini-tts",
+      model,
       input: text,
       voice: chosenVoice,
       format,
@@ -162,7 +180,7 @@ export async function POST(req: NextRequest) {
       throw new Error("OpenAI TTS failed after retries");
     }
 
-    const resp = await callWithRetry(3);
+  const resp = await callWithRetry(3);
 
     if (!resp.ok) {
       const raw = await resp.text();
@@ -174,6 +192,69 @@ export async function POST(req: NextRequest) {
       console.error("OpenAI TTS error", resp.status, sanitize(raw));
 
       const isAuth = resp.status === 401 || resp.status === 403;
+      // If endpoint not available (404/invalid URL), try Responses API with audio modality as a fallback path
+      const maybeInvalidUrl = resp.status === 404 || (typeof upstream === 'object' && upstream !== null && (() => {
+        const err = (upstream as { error?: { message?: string } }).error;
+        const msg = err?.message || '';
+        return typeof msg === 'string' && msg.toLowerCase().includes('invalid url');
+      })());
+      if (maybeInvalidUrl) {
+        try {
+          const responsesHeaders: Record<string,string> = { ...headers };
+          delete responsesHeaders['Accept'];
+          const responsesPayload: { model: string; input: string; modalities: string[]; audio: { voice: string; format: string } } = {
+            model: model,
+            input: text,
+            modalities: ['text','audio'],
+            audio: { voice: chosenVoice, format },
+          };
+          const r2 = await fetch('https://api.openai.com/v1/responses', { method: 'POST', headers: responsesHeaders, body: JSON.stringify(responsesPayload) });
+          if (r2.ok) {
+            const j: unknown = await r2.json();
+            // Attempt to locate base64 audio in output structure
+            let b64: string | null = null;
+            const jObj = (j && typeof j === 'object') ? j as Record<string, unknown> : {};
+            const outputs = (jObj['output'] ?? jObj['outputs'] ?? jObj['data']) as unknown;
+            const arr = Array.isArray(outputs) ? outputs : [] as unknown[];
+            outer: for (const item of arr) {
+              const content = (item && typeof item === 'object') ? (item as Record<string, unknown>)['content'] : undefined;
+              if (Array.isArray(content)) {
+                for (const part of content) {
+                  if (part && typeof part === 'object') {
+                    const audioObj = (part as Record<string, unknown>)['audio'] ?? (part as Record<string, unknown>)['output_audio'];
+                    const data = (audioObj && typeof audioObj === 'object') ? (audioObj as Record<string, unknown>)['data'] : undefined;
+                    if (typeof data === 'string' && data.length > 0) { b64 = data; break outer; }
+                  }
+                }
+              }
+            }
+            if (b64) {
+              const buf = Buffer.from(b64, 'base64');
+              const arrBuf: ArrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+              cache.set(key, arrBuf);
+              return new Response(arrBuf, {
+                status: 200,
+                headers: {
+                  "Content-Type": mimeFor(format),
+                  "Content-Disposition": `inline; filename=tts.${format}`,
+                  "Cache-Control": "no-store",
+                  "X-Cache": "MISS",
+                  "X-Voice-Selected": chosenVoice,
+                  ...(voiceFallback ? { "X-Voice-Fallback": "1" } : {}),
+                  "X-TTS-Model": model,
+                  ...(requireBetterTts ? { 'X-Strict-Better-TTS': '1' } : {}),
+                  "X-TTS-Path": "responses",
+                },
+              });
+            }
+          } else {
+            const t2 = await r2.text().catch(()=>"");
+            console.warn('Responses API TTS fallback failed', r2.status, t2.slice(0,200));
+          }
+        } catch (e) {
+          console.warn('Responses API TTS fallback error', e instanceof Error ? e.message : String(e));
+        }
+      }
       let providerMessage: string | null = null;
       if (upstream && typeof upstream === "object") {
         const u = upstream as { error?: { message?: string }; message?: string };
@@ -198,6 +279,8 @@ export async function POST(req: NextRequest) {
         "X-Cache": "MISS",
         "X-Voice-Selected": chosenVoice,
         ...(voiceFallback ? { "X-Voice-Fallback": "1" } : {}),
+        "X-TTS-Model": model,
+        ...(requireBetterTts ? { 'X-Strict-Better-TTS': '1' } : {}),
       },
     });
   } catch (e) {

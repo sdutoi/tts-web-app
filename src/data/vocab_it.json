@@ -56,32 +56,6 @@
       ]
     },
     {
-      "id": "coworking_startup",
-      "label": "Coworking & Startup",
-      "items": [
-        { "id": "pitch_deck", "term": "pitch deck", "cefr": "B2", "tags": ["startup"], "example": "Stiamo finalizzando il pitch deck." },
-        { "id": "early_traction", "term": "prima traction", "cefr": "B2", "tags": ["crescita"], "example": "Abbiamo prima traction in Europa." },
-        { "id": "burn_rate", "term": "burn rate", "cefr": "C1", "tags": ["finanza"], "example": "La nostra burn rate ora è sostenibile." },
-        { "id": "shipping_feature", "term": "rilasciare una feature", "cefr": "B1", "tags": ["dev"], "example": "Vogliamo rilasciare una feature a settimana." },
-        { "id": "lean_iteration", "term": "iterazione lean", "cefr": "B2", "tags": ["metodo"], "example": "Puntiamo sull'iterazione lean." },
-        { "id": "open_workspace", "term": "spazio aperto", "cefr": "A2", "tags": ["spazio"], "example": "È uno spazio aperto rumoroso." },
-        { "id": "focus_room", "term": "stanza focus", "cefr": "A2", "tags": ["spazio"], "example": "Prenota una stanza focus per le chiamate." },
-        { "id": "desk_hoteling", "term": "desk hoteling", "cefr": "B2", "tags": ["policy"], "example": "Usiamo il desk hoteling per l'ibrido.", "hint": "prenotazione scrivanie" },
-        { "id": "seed_round", "term": "round seed", "cefr": "B2", "tags": ["funding"], "example": "Stanno alzando un round seed." },
-        { "id": "runway_months", "term": "runway (mesi)", "cefr": "B1", "tags": ["finanza"], "example": "Abbiamo 14 mesi di runway." },
-        { "id": "cash_flow_positive", "term": "positivi in cash flow", "cefr": "C1", "tags": ["finanza"], "example": "Siamo diventati positivi in cash flow nel Q3." },
-        { "id": "product_market_fit", "term": "product‑market fit", "cefr": "B2", "tags": ["crescita"], "example": "Stiamo iterando verso il product‑market fit." },
-        { "id": "pivot_hypothesis", "term": "ipotesi di pivot", "cefr": "C1", "tags": ["strategia"], "example": "Abbiamo formulato un'ipotesi di pivot.", "hint": "idea di cambio strategico" },
-        { "id": "backlog_grooming", "term": "grooming backlog", "cefr": "B2", "tags": ["agile"], "example": "Il grooming backlog è domani." },
-        { "id": "technical_debt", "term": "debito tecnico", "cefr": "B2", "tags": ["engineering"], "example": "Abbiamo pianificato tempo per il debito tecnico." },
-        { "id": "founder_dilution", "term": "diluizione dei founder", "cefr": "C1", "tags": ["finanza"], "example": "Il round causa diluizione dei founder." },
-        { "id": "talent_retention", "term": "retention talenti", "cefr": "C1", "tags": ["hr"], "example": "La retention talenti è prioritaria." },
-        { "id": "async_standup", "term": "stand-up asincrono", "cefr": "B1", "tags": ["workflow"], "example": "Facciamo uno stand-up asincrono il venerdì." },
-        { "id": "code_freeze", "term": "code freeze", "cefr": "B1", "tags": ["release"], "example": "Il code freeze inizia stasera." },
-        { "id": "go_to_market", "term": "piano go-to-market", "cefr": "C2", "tags": ["strategia"], "example": "Abbiamo redatto un piano go-to-market.", "hint": "strategia lancio" }
-      ]
-    },
-    {
       "id": "shared_apartment",
       "label": "Appartamento condiviso / Coinquilini",
       "items": [

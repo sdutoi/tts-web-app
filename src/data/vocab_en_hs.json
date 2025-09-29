@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 2,
+  "language": "en",
+  "version": 1,
+  "generatedAt": "2025-09-28T00:00:00Z",
+  "categories": [
+    {
+      "id": "school_life",
+      "label": "High school life",
+      "items": [
+        { "id": "homeroom", "term": "homeroom", "cefr": "A2", "tags": ["school"], "example": "We have homeroom at 8:05." },
+        { "id": "homework", "term": "homework", "cefr": "A1", "tags": ["school"], "example": "I have a lot of homework tonight." },
+        { "id": "pop_quiz", "term": "pop quiz", "cefr": "B1", "tags": ["assessment"], "example": "The teacher gave a pop quiz in math." },
+        { "id": "group_project", "term": "group project", "cefr": "A2", "tags": ["work"], "example": "Our group project is due Friday." },
+        { "id": "study_hall", "term": "study hall", "cefr": "B1", "tags": ["time"], "example": "I go to study hall after lunch." },
+        { "id": "field_trip", "term": "field trip", "cefr": "A2", "tags": ["event"], "example": "The field trip is to the art museum." },
+        { "id": "class_rep", "term": "class representative", "cefr": "A2", "tags": ["role"], "example": "We elect a class representative today." },
+        { "id": "lunch_pass", "term": "lunch card", "cefr": "A1", "tags": ["admin"], "example": "I forgot my lunch card." },
+        { "id": "ace_the_test", "term": "ace the test", "cefr": "B1", "tags": ["expression"], "example": "I think I aced the physics test.", "register": "casual" },
+        { "id": "cram_night", "term": "cram all night", "cefr": "B2", "tags": ["expression"], "example": "We crammed all night before the exam." },
+        { "id": "deadline", "term": "deadline", "cefr": "A2", "tags": ["school","admin"], "example": "The deadline to turn it in is Friday." }
+      ]
+    },
+    {
+      "id": "friend_groups",
+      "label": "Friends & drama",
+      "items": [
+        { "id": "inside_joke", "term": "inside joke", "cefr": "B1", "tags": ["social"], "example": "It was an inside joke, no worries." },
+        { "id": "group_chat", "term": "group chat", "cefr": "A2", "tags": ["social"], "example": "We have a class group chat." },
+        { "id": "ship_couple", "term": "ship a couple", "cefr": "B2", "tags": ["slang"], "example": "They started shipping those two." },
+        { "id": "spill_tea", "term": "spill the tea", "cefr": "B2", "tags": ["slang"], "example": "Come on, spill the tea!" },
+        { "id": "no_drama", "term": "no drama", "cefr": "A2", "tags": ["slang"], "example": "No drama this weekend." },
+        { "id": "bestie", "term": "bestie", "cefr": "A1", "tags": ["friend"], "example": "I'm going with my bestie.", "hint": "best friend (casual)" },
+        { "id": "hang_out", "term": "hang out together", "cefr": "A2", "tags": ["social"], "example": "We hang out at the skatepark." },
+        { "id": "no_cap", "term": "no cap", "cefr": "B2", "tags": ["slang"], "example": "No cap, it was amazing.", "hint": "no lie" }
+      ]
+    },
+    {
+      "id": "gaming_esports",
+      "label": "Gaming & esports",
+      "items": [
+        { "id": "ranked_match", "term": "ranked match", "cefr": "B1", "tags": ["gaming"], "example": "I'm starting a ranked match." },
+        { "id": "carry_team", "term": "carry the team", "cefr": "B2", "tags": ["gaming","slang"], "example": "He carried the team in the finals." },
+        { "id": "nerf_buff", "term": "nerf / buff", "cefr": "B1", "tags": ["gaming"], "example": "They're going to nerf this character and buff the other." },
+        { "id": "LAN_party", "term": "LAN party", "cefr": "A2", "tags": ["event"], "example": "We're hosting a LAN party on Saturday." },
+        { "id": "loot_box", "term": "loot box", "cefr": "A2", "tags": ["gaming"], "example": "I opened a rare loot box." },
+        { "id": "ping_latency", "term": "ping / latency", "cefr": "B1", "tags": ["tech"], "example": "The ping is too high; it's lagging." },
+        { "id": "speedrun", "term": "speedrun", "cefr": "B1", "tags": ["gaming"], "example": "I'm attempting a speedrun." }
+      ]
+    },
+    {
+      "id": "music_content",
+      "label": "Music, content & creators",
+      "items": [
+        { "id": "drop_new_track", "term": "drop a new track", "cefr": "B1", "tags": ["music"], "example": "He dropped a new track yesterday." },
+        { "id": "playlist_mood", "term": "mood playlist", "cefr": "A2", "tags": ["music"], "example": "I have a mood playlist for studying." },
+        { "id": "fandom", "term": "fandom", "cefr": "A2", "tags": ["culture"], "example": "The fandom for this group is huge." },
+        { "id": "content_creator", "term": "content creator", "cefr": "B1", "tags": ["social"], "example": "That content creator is inspiring." },
+        { "id": "go_viral", "term": "go viral", "cefr": "B1", "tags": ["social"], "example": "This video went viral." },
+        { "id": "challenge_trend", "term": "challenge / trend", "cefr": "A2", "tags": ["social"], "example": "Should we try the new challenge?" },
+  { "id": "be_a_fan_of", "term": "be a fan of", "cefr": "A2", "tags": ["culture","expression"], "example": "I've been a fan of this group since middle school." },
+        { "id": "binge_watch", "term": "binge-watch", "cefr": "B1", "tags": ["culture"], "example": "We binge-watched the whole season." }
+      ]
+    },
+    {
+      "id": "sports_clubs",
+      "label": "Sports & clubs",
+      "items": [
+        { "id": "tryouts", "term": "tryouts", "cefr": "B1", "tags": ["sport"], "example": "Tryouts are next week." },
+        { "id": "practice", "term": "practice / training", "cefr": "A2", "tags": ["sport"], "example": "We have practice after school." },
+        { "id": "captain", "term": "captain", "cefr": "A2", "tags": ["role"], "example": "The captain is a senior." },
+        { "id": "club_fair", "term": "club fair", "cefr": "A2", "tags": ["event"], "example": "The club fair is on Friday." },
+        { "id": "away_game", "term": "away game", "cefr": "B1", "tags": ["sport"], "example": "We have an away game on Saturday." },
+        { "id": "pep_rally", "term": "pep rally", "cefr": "B1", "tags": ["culture"], "example": "There's a pep rally in the gym." },
+        { "id": "after_practice_snack", "term": "post-practice snack", "cefr": "A2", "tags": ["habit"], "example": "Post-practice snack at the kiosk." }
+      ]
+    },
+    {
+      "id": "future_plans",
+      "label": "Future plans & orientation",
+      "items": [
+        { "id": "career_fair", "term": "career fair", "cefr": "B1", "tags": ["orientation"], "example": "We're going to the career fair tomorrow." },
+        { "id": "college_app", "term": "college application", "cefr": "B1", "tags": ["admin"], "example": "My college application is almost ready." },
+        { "id": "gap_year", "term": "gap year", "cefr": "B2", "tags": ["plan"], "example": "I'm considering a gap year." },
+        { "id": "internship", "term": "internship", "cefr": "A2", "tags": ["experience"], "example": "My internship is in February." },
+        { "id": "portfolio", "term": "portfolio", "cefr": "B1", "tags": ["project"], "example": "I'm finishing my portfolio." },
+        { "id": "open_day", "term": "open day", "cefr": "A2", "tags": ["orientation"], "example": "The open day is on Saturday." }
+      ]
+    },
+    {
+      "id": "after_school",
+      "label": "After school & outings",
+      "items": [
+        { "id": "mall_meetup", "term": "meet at the mall", "cefr": "A2", "tags": ["outing"], "example": "Meet at the mall after 4?" },
+        { "id": "movie_night", "term": "movie night", "cefr": "A2", "tags": ["outing"], "example": "Wanna do a movie night?" },
+        { "id": "escape_room", "term": "escape room", "cefr": "B1", "tags": ["outing"], "example": "Let's book an escape room for Saturday." },
+        { "id": "skatepark", "term": "skatepark", "cefr": "A2", "tags": ["sport"], "example": "See you at the skatepark." },
+        { "id": "bowling", "term": "bowling", "cefr": "A1", "tags": ["outing"], "example": "Bowling tonight?" },
+        { "id": "grab_a_bite", "term": "grab a bite", "cefr": "A2", "tags": ["expression"], "example": "Wanna grab a bite?", "register": "casual" }
+      ]
+    },
+    {
+      "id": "digital_life",
+      "label": "Digital life & safety",
+      "items": [
+        { "id": "screen_time", "term": "screen time", "cefr": "A2", "tags": ["tech"], "example": "I limit my screen time at night." },
+        { "id": "two_factor", "term": "two-factor authentication", "cefr": "B1", "tags": ["security"], "example": "Turn on two-factor authentication." },
+        { "id": "privacy_settings", "term": "privacy settings", "cefr": "B1", "tags": ["security"], "example": "Check your privacy settings." },
+        { "id": "cyberbullying", "term": "cyberbullying", "cefr": "B2", "tags": ["safety"], "example": "The school is campaigning against cyberbullying." },
+        { "id": "report_account", "term": "report an account", "cefr": "B1", "tags": ["social"], "example": "I reported a fake account." },
+        { "id": "post_with_care", "term": "post with care", "cefr": "A2", "tags": ["advice"], "example": "Always post with care." }
+      ]
+    }
+  ]
+}

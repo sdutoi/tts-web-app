@@ -1,6 +1,6 @@
 {
   "language": "fr",
-  "version": 3,
+  "version": 4,
   "generatedAt": "2025-09-21T00:00:00Z",
   "categories": [
     {
@@ -17,16 +17,16 @@
         { "id": "brew_method", "term": "méthode d'extraction", "cefr": "B1", "tags": ["processus"], "example": "Quelle méthode d'extraction utilisez-vous ?" },
         { "id": "foam_level", "term": "niveau de mousse", "cefr": "B1", "tags": ["description"], "example": "Vous pouvez réduire le niveau de mousse ?" },
         { "id": "seasonal_special", "term": "spécial saisonnier", "cefr": "A2", "tags": ["promotion"], "example": "C'est quoi le spécial saisonnier ?" },
-        { "id": "refill", "term": "recharge", "cefr": "A1", "tags": ["nom","verbe"], "example": "Je peux avoir une recharge ?" },
-        { "id": "light_roast", "term": "torsion légère", "cefr": "A2", "tags": ["description"], "example": "Je préfère une torréfaction légère." },
-        { "id": "dark_roast", "term": "torréfaction foncée", "cefr": "A2", "tags": ["description"], "example": "Vous avez un filtre torréfaction foncée ?" },
-        { "id": "grind_size", "term": "taille de mouture", "cefr": "B2", "tags": ["paramètre"], "example": "Ajustez la taille de mouture plus fine." },
+  { "id": "refill", "term": "refill (recharge)", "cefr": "A1", "tags": ["nom","verbe"], "example": "Je peux avoir un refill ?", "hint": "souvent on garde 'refill'" },
+  { "id": "light_roast", "term": "torréfaction légère", "cefr": "A2", "tags": ["description"], "example": "Je préfère une torréfaction légère." },
+  { "id": "dark_roast", "term": "torréfaction foncée", "cefr": "A2", "tags": ["description"], "example": "Vous avez un filtre à torréfaction foncée ?" },
+  { "id": "grind_size", "term": "taille de mouture", "cefr": "B2", "tags": ["paramètre"], "example": "Ajustez la taille de mouture un peu plus fine." },
         { "id": "decaf_option", "term": "option décaféinée", "cefr": "A2", "tags": ["nom"], "example": "Vous avez une option décaféinée ?" },
         { "id": "syrup_pump", "term": "pompe de sirop", "cefr": "B1", "tags": ["mesure"], "example": "Seulement deux pompes de sirop." },
-        { "id": "comp_drink", "term": "boisson offerte", "cefr": "C1", "tags": ["service_client"], "example": "Ils ont offert une boisson offerte après le retard.", "hint": "gratuite par geste commercial" },
+  { "id": "comp_drink", "term": "boisson offerte", "cefr": "C1", "tags": ["service_client"], "example": "Ils ont offert une boisson après le retard.", "hint": "gratuite (geste commercial)" },
         { "id": "queue_number", "term": "numéro de commande", "cefr": "A1", "tags": ["administratif"], "example": "Mon numéro de commande est 42." },
         { "id": "beans_freshly_roasted", "term": "grains fraîchement torréfiés", "cefr": "B2", "tags": ["qualité"], "example": "On n'utilise que des grains fraîchement torréfiés." },
-        { "id": "temperature_okay", "term": "La température ça va ?", "cefr": "A2", "tags": ["service","question"], "example": "La température ça va ou c'est trop chaud ?" }
+        { "id": "temperature_okay", "term": "La température ça va ?", "cefr": "A2", "tags": ["service","question"], "example": "La température ça va ou c'est trop chaud?" }
       ]
     },
     {
@@ -53,32 +53,6 @@
         { "id": "handoff_point", "term": "point de relais", "cefr": "C2", "tags": ["logistique"], "example": "Choisissons un point de relais neutre.", "hint": "lieu de rencontre" },
         { "id": "fare_dispute", "term": "litige de tarif", "cefr": "C1", "tags": ["problem"], "example": "J'ai ouvert un litige de tarif." },
         { "id": "night_surcharge", "term": "surcharge de nuit", "cefr": "B2", "tags": ["pricing"], "example": "Il y a une surcharge de nuit après minuit." }
-      ]
-    },
-    {
-      "id": "coworking_startup",
-      "label": "Coworking & Startup",
-      "items": [
-        { "id": "pitch_deck", "term": "pitch deck", "cefr": "B2", "tags": ["startup"], "example": "On finalise le pitch deck." },
-        { "id": "early_traction", "term": "premiers signes de traction", "cefr": "B2", "tags": ["growth"], "example": "On a de la traction en Europe." },
-        { "id": "burn_rate", "term": "burn rate", "cefr": "C1", "tags": ["finance"], "example": "Notre burn rate est soutenable maintenant." },
-        { "id": "shipping_feature", "term": "livrer une fonctionnalité", "cefr": "B1", "tags": ["dev"], "example": "On veut livrer une fonctionnalité chaque semaine." },
-        { "id": "lean_iteration", "term": "itération lean", "cefr": "B2", "tags": ["method"], "example": "On mise sur l'itération lean." },
-        { "id": "open_workspace", "term": "espace ouvert", "cefr": "A2", "tags": ["espace"], "example": "C'est un espace ouvert bruyant." },
-        { "id": "focus_room", "term": "salle de focus", "cefr": "A2", "tags": ["espace"], "example": "Réserve une salle de focus pour les appels." },
-        { "id": "desk_hoteling", "term": "réservation de bureau", "cefr": "B2", "tags": ["policy"], "example": "On utilise la réservation de bureau pour l'hybride.", "hint": "système de réservation" },
-        { "id": "seed_round", "term": "levée seed", "cefr": "B2", "tags": ["funding"], "example": "Ils lèvent une levée seed." },
-        { "id": "runway_months", "term": "runway (mois)", "cefr": "B1", "tags": ["finance"], "example": "On a 14 mois de runway." },
-        { "id": "cash_flow_positive", "term": "positif en cash-flow", "cefr": "C1", "tags": ["finance"], "example": "On est devenu positif en cash-flow au T3." },
-        { "id": "product_market_fit", "term": "product‑market fit", "cefr": "B2", "tags": ["growth"], "example": "On cherche le product‑market fit." },
-        { "id": "pivot_hypothesis", "term": "hypothèse de pivot", "cefr": "C1", "tags": ["strategy"], "example": "On a formulé une hypothèse de pivot.", "hint": "idée de changement stratégique" },
-        { "id": "backlog_grooming", "term": "grooming du backlog", "cefr": "B2", "tags": ["agile"], "example": "Le grooming du backlog est demain." },
-        { "id": "technical_debt", "term": "dette technique", "cefr": "B2", "tags": ["engineering"], "example": "On a planifié du temps pour la dette technique." },
-        { "id": "founder_dilution", "term": "dilution des fondateurs", "cefr": "C1", "tags": ["finance"], "example": "La levée cause une dilution des fondateurs." },
-        { "id": "talent_retention", "term": "rétention de talents", "cefr": "C1", "tags": ["hr"], "example": "La rétention de talents est prioritaire." },
-        { "id": "async_standup", "term": "stand-up asynchrone", "cefr": "B1", "tags": ["workflow"], "example": "On fait un stand-up asynchrone vendredi." },
-        { "id": "code_freeze", "term": "gel de code", "cefr": "B1", "tags": ["release"], "example": "Le gel de code commence ce soir." },
-        { "id": "go_to_market", "term": "plan go-to-market", "cefr": "C2", "tags": ["strategy"], "example": "On a rédigé un plan go-to-market.", "hint": "stratégie de lancement" }
       ]
     },
     {

@@ -1,8 +1,7 @@
 ## Language TTS & Dialogue Builder (EN/DE/FR/IT/ES) – Next.js App
 
-This app lets you practice multiple languages (English, French, German, Italian, Spanish) using:
-- A redesigned landing page: pick a language, then select one of five sample sentences (A1→C1 difficulty) to set your approximate level.
-- Automatic handoff into the dialogue builder pre-filled with language + level + seed sentence.
+This app lets you practice multiple languages (English, French, German, Italian, Spanish) with a streamlined flow:
+- Minimal landing page: click a language → you go straight to the dialogue builder (no sample sentence or feature marketing screen).
 - TTS (gpt-4o-mini-tts) playback with voice fallback and caching.
 - Dual-voice dialogue playback: pick two distinct voices (A / B) per language; client caches audio to avoid repeat API calls.
 - Random scenario vocabulary sampling: each scenario shows 5 randomly sampled items (from up to 20 that match or are near the chosen CEFR level) to keep sessions varied.
@@ -14,6 +13,24 @@ This app lets you practice multiple languages (English, French, German, Italian,
 
 - Node.js 18+ (Node 20 recommended)
 - An OpenAI API key with access to TTS
+
+### Model Configuration (Env Overrides)
+
+You can switch to higher quality or alternate models without code changes using environment variables:
+
+```
+OPENAI_TEXT_MODEL=gpt-4.1-mini        # used by dialogue + story routes (default fallback if unset)
+OPENAI_TTS_MODEL=gpt-4o-audio-preview # used by /api/tts (defaults to gpt-4o-mini-tts if unset or invalid)
+```
+
+Allowlisted text models: `gpt-4.1-mini`, `gpt-4.1`, `gpt-4o`, `gpt-4o-mini`.
+Allowlisted TTS models: `gpt-4o-mini-tts`, `gpt-4o-audio-preview`, `gpt-4o-realtime-preview` (non-stream usage).
+
+Responses include headers for observability:
+- `X-Text-Model` on dialogue/story endpoints
+- `X-TTS-Model` on TTS endpoint
+
+If an env var is set to a non-allowlisted value the route silently falls back to the default safe model.
 
 ## Setup
 
@@ -33,18 +50,11 @@ This app lets you practice multiple languages (English, French, German, Italian,
 
 Open http://localhost:3000 to use the UI.
 
-## How it works
+## How it works (Overview)
 
-- API route: `src/app/api/tts/route.ts`
-  - Accepts POST with `{ text, lang, speed, format }`
-  - Calls OpenAI TTS and returns audio (mp3 or ogg)
-  - In-memory per-instance cache avoids duplicate requests
-
-- UI page: `src/app/page.tsx`
-  - Textarea + language select (en/de/fr), speed slider (0.5–1.25), format (mp3/ogg)
-  - Plays audio and offers a download link
-
-Notes on speed: The server may return normal-speed audio; the page applies the chosen speed using the browser's audio playbackRate for listening. The downloaded file will be at the generated speed, not the adjusted playback speed.
+- Landing (`src/app/page.tsx`): Animated gradient + language grid (EN / DE / FR / IT / ES). Selecting a language navigates directly to `/dialogue?lang=xx`.
+- Dialogue Builder (`src/app/dialogue/page.tsx`): Choose level, scenario, sample vocab (5 items, re-shuffle keeps selections), add custom words, generate / refine dialogue, preview & assign two voices, export full audio.
+- TTS API: `src/app/api/tts/route.ts` handles per-turn synthesis with caching and voice fallback.
 
 ## Deploy
 
@@ -94,3 +104,81 @@ If you observe untranslated fragments that are not proper nouns, regenerate— t
 - Turn playback audio cached in-memory by `{ text, lang, speed, format, voice }`.
 - WAV export inserts configurable silence (default 0.50s) between turns; MP3 concat is best-effort and may compress gaps.
 - Keep candidate list small (~5) for responsiveness; consider pagination if expanding.
+
+### Static Voice Demo Clips (Optional Optimization)
+
+To avoid a TTS API call every time a user clicks a voice Demo button, you can pre-generate short demo clips for each (language, voice) pair and serve them statically from `public/demos`.
+
+Script: `scripts/generate_voice_demos.py`
+
+What it does:
+- Iterates languages (EN / DE / FR / IT / ES plus provisional RU / JA / PT / NL) and their `VOICE_CANDIDATES` (mirrors `src/app/dialogue/page.tsx`—UI may not yet expose new languages; demos can still be prepared ahead of UI support).
+- Generates a localized short sentence based on a unified pattern: "Hello, do you want to learn {LanguageName} with me? Let's go!" translated/adapted per language (e.g., DE: "Hallo, willst du Deutsch mit mir lernen? Los geht's!").
+- Saves `public/demos/{lang}_{voice}.mp3`.
+- Skips existing files unless you pass `--force`.
+
+Run:
+
+```
+export OPENAI_API_KEY=sk-...   # plus OPENAI_PROJECT_ID / OPENAI_ORG_ID if needed
+python scripts/generate_voice_demos.py
+```
+
+Options:
+- `--only-lang de` – limit to a single language
+- `--voices ash,echo` – restrict to a subset of voices after language filtering
+- `--force` – overwrite existing clips
+- `--strict` – abort on first failure (otherwise partial failures return exit code 4)
+- `--sleep 1.0` – base delay between successful calls (default 0.75s)
+- `--retries 4` – number of retries for retriable errors (total attempts = retries + 1)
+- `--retry-backoff 1.8` – exponential backoff factor (sleep = factor^(attempt-1) + jitter)
+- `--verify` – just check presence & size (>=2KB) of expected clips, no generation; returns code 3 if any are missing/too small
+- `--model gpt-4o-audio-preview` – optional explicit model; auto-falls back to `gpt-4o-mini-tts` on model errors
+- `--debug` – verbose HTTP error snippets for troubleshooting (helpful if all clips are failing quickly)
+
+Typical partial-regeneration after a single failure (e.g., en-echo):
+```
+python scripts/generate_voice_demos.py --only-lang en --voices echo --force --retries 4 --retry-backoff 1.8
+```
+
+CI / automation suggestion:
+1. `python scripts/generate_voice_demos.py --verify` (fast check) ➜ if exit code 3 then
+2. `python scripts/generate_voice_demos.py --force` (or selective) ➜ build ➜ commit.
+
+Frontend behavior:
+1. When you click Demo for a voice, the client first issues a `HEAD` request to `/demos/{lang}_{voice}.mp3`.
+2. If it exists, it plays that static asset.
+3. If not, it falls back to the dynamic `/api/tts` call and caches the object URL in-memory.
+
+Repository considerations:
+- Keep sentences short to minimize file size (each clip should be only a few KB).
+- If repository bloat becomes a concern, you can host them on object storage/CDN instead.
+- Re-run the script whenever you change the sentence template or add voices.
+
+If you add or remove voices, update both:
+1. `VOICE_CANDIDATES` in `src/app/dialogue/page.tsx`
+2. The dictionary in `scripts/generate_voice_demos.py`
+
+Scenario data note: The "Coworking & Startup" scenario was removed from all vocab files to reduce scope. Run `node scripts/validateVocab.mjs` after any manual data edits to ensure schema integrity.
+
+Failure Handling:
+- The script logs any failed (lang, voice) pairs at the end. Non-strict mode continues.
+- Use `--strict` in CI to enforce completeness.
+
+## Proficiency (CEFR) Quick Selector Overlay
+
+When a user lands on the dialogue builder without explicitly specifying a `level` query param, an overlay now appears prompting them to pick their comfort level (A1–C1). The user:
+
+1. Reads 5 sample sentences (static per language for now) from easiest (A1) to harder (C1).
+2. Clicks the highest level where they still feel comfortable.
+3. Clicks "Confirm Level" (or skips, retaining the default A2).
+
+After confirmation the selection updates the internal `level` state used for dialogue generation and the overlay disappears (it will not reappear unless the page is reloaded without a `level` query parameter AND no selection has been stored in state yet).
+
+Implementation details:
+- Component: `src/app/components/ProficiencySelector.tsx`
+- Integrated in `src/app/dialogue/page.tsx` just inside the main wrapper.
+- Omitted C2 from the initial comfort prompt to reduce decision friction; C2 remains selectable in the level dropdown afterwards if needed.
+- Sentences are currently static; they can be replaced later by sampling examples from vocab data or an API.
+
+To bypass the overlay (e.g., deep link): append `?lang=de&level=B1` to `/dialogue`.

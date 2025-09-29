@@ -112,8 +112,32 @@ export async function POST(req: NextRequest) {
   if (project) headers["OpenAI-Project"] = project;
   if (org) headers["OpenAI-Organization"] = org;
 
+  const ALLOWED_TEXT_MODELS = [ 'gpt-4.1-mini','gpt-4.1','gpt-4o','gpt-4o-mini' ];
+  // Try env override first, then probe for better model
+  const requireBetter = /^(1|true)$/i.test((process.env.OPENAI_REQUIRE_BETTER || '').trim());
+  let resolvedTextModel = (process.env.OPENAI_TEXT_MODEL?.trim() && ALLOWED_TEXT_MODELS.includes(process.env.OPENAI_TEXT_MODEL!.trim())) ? process.env.OPENAI_TEXT_MODEL!.trim() : '';
+  if (resolvedTextModel) {
+    if (requireBetter && !['gpt-4o','gpt-4.1'].includes(resolvedTextModel)) {
+      return new Response(JSON.stringify({ error: 'Strict better-model required (gpt-4o or gpt-4.1), but OPENAI_TEXT_MODEL is set otherwise.' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+    }
+  } else {
+    const preferred = ['gpt-4o','gpt-4.1'] as const;
+    for (const m of preferred) {
+      try {
+        const probe = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ model: m, messages: [{ role:'user', content:'ok'}], max_tokens: 1 }) });
+        if (probe.ok) { resolvedTextModel = m; break; }
+      } catch { /* ignore */ }
+    }
+    if (!resolvedTextModel) {
+      if (requireBetter) {
+        return new Response(JSON.stringify({ error: 'Strict better-model required, but neither gpt-4o nor gpt-4.1 are available.', hint: 'Grant access to gpt-4o or gpt-4.1 or unset OPENAI_REQUIRE_BETTER' }), { status: 503, headers: { 'Content-Type':'application/json' } });
+      }
+      resolvedTextModel = 'gpt-4.1-mini';
+    }
+  }
+
   const payload = {
-    model: "gpt-4o-mini",
+    model: resolvedTextModel,
     messages,
     temperature: 0.7,
     response_format: { type: "json_object" },
@@ -149,15 +173,9 @@ export async function POST(req: NextRequest) {
   // Try to parse JSON content
   try {
     const parsed = JSON.parse(content);
-    return new Response(JSON.stringify(parsed), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify(parsed), { status: 200, headers: { "Content-Type": "application/json", "X-Text-Model": resolvedTextModel, ...(requireBetter ? { 'X-Strict-Better': '1' } : {}) } });
   } catch {
     // If model returned plain text, wrap it
-    return new Response(
-      JSON.stringify({ title: "Mini Story", story: content, vocab: [] }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ title: "Mini Story", story: content, vocab: [] }), { status: 200, headers: { "Content-Type": "application/json", "X-Text-Model": resolvedTextModel, ...(requireBetter ? { 'X-Strict-Better': '1' } : {}) } });
   }
 }

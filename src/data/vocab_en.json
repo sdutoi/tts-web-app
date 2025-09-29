@@ -9,6 +9,8 @@
       "items": [
         { "id": "to_go_or_stay", "term": "for here or to go?", "cefr": "A2", "tags": ["service","question"], "example": "Is that for here or to go?", "hint": "barista choice" },
         { "id": "oat_milk", "term": "oat milk", "cefr": "A1", "tags": ["noun"], "example": "Do you have oat milk?" },
+        { "id": "iced_latte", "term": "iced latte", "cefr": "A1", "tags": ["drink"], "example": "I'd like an iced latte." },
+        { "id": "sugar_packet", "term": "sugar packet", "cefr": "A1", "tags": ["noun"], "example": "Can I get a sugar packet?" },
         { "id": "single_origin", "term": "single-origin beans", "cefr": "B2", "tags": ["specialty"], "example": "We feature single-origin beans today." },
         { "id": "running_low", "term": "we're running low (on)", "cefr": "B1", "tags": ["supply","phrase"], "example": "We're running low on croissants." },
         { "id": "tab_open", "term": "keep a tab open", "cefr": "B2", "tags": ["request"], "example": "Could you keep a tab open?" },
@@ -20,6 +22,7 @@
         { "id": "refill", "term": "refill", "cefr": "A1", "tags": ["noun","verb"], "example": "Can I get a refill?" },
         { "id": "light_roast", "term": "light roast", "cefr": "A2", "tags": ["descriptor"], "example": "I prefer a light roast." },
         { "id": "dark_roast", "term": "dark roast", "cefr": "A2", "tags": ["descriptor"], "example": "Do you have a dark roast drip?" },
+        { "id": "to_go_lid", "term": "to-go lid", "cefr": "A2", "tags": ["accessory"], "example": "Could I get a to-go lid?" },
         { "id": "grind_size", "term": "grind size", "cefr": "B2", "tags": ["parameter"], "example": "Adjust the grind size a bit finer." },
         { "id": "decaf_option", "term": "decaf option", "cefr": "A2", "tags": ["noun"], "example": "Is there a decaf option?" },
         { "id": "syrup_pump", "term": "syrup pump", "cefr": "B1", "tags": ["measure"], "example": "Two syrup pumps only." },
@@ -34,6 +37,7 @@
       "label": "Ride Share & Night Out",
       "items": [
         { "id": "shared_ride", "term": "shared ride", "cefr": "A1", "tags": ["noun_phrase"], "example": "I booked a shared ride." },
+        { "id": "ride_app", "term": "ride app", "cefr": "A1", "tags": ["tool"], "example": "I opened the ride app." },
         { "id": "surge_pricing", "term": "surge pricing", "cefr": "B1", "tags": ["market"], "example": "There's surge pricing right now." },
         { "id": "drop_me", "term": "drop me off near", "cefr": "A2", "tags": ["request"], "example": "Can you drop me off near the plaza?" },
         { "id": "lost_item", "term": "lost item report", "cefr": "B2", "tags": ["support"], "example": "I filed a lost item report." },
@@ -52,33 +56,9 @@
         { "id": "crowded_district", "term": "crowded nightlife district", "cefr": "B2", "tags": ["setting"], "example": "It's a crowded nightlife district tonight." },
         { "id": "handoff_point", "term": "handoff point", "cefr": "C2", "tags": ["logistics"], "example": "Let's pick a neutral handoff point.", "hint": "mutual meeting location" },
         { "id": "fare_dispute", "term": "fare dispute", "cefr": "C1", "tags": ["problem"], "example": "I opened a fare dispute in the app." },
+        { "id": "wait_time", "term": "wait time", "cefr": "A2", "tags": ["status"], "example": "The wait time is five minutes." },
+        { "id": "text_when_here", "term": "text when you're here", "cefr": "A2", "tags": ["request"], "example": "Text when you're here please." },
         { "id": "night_surcharge", "term": "night surcharge", "cefr": "B2", "tags": ["pricing"], "example": "There's a night surcharge after midnight." }
-      ]
-    },
-    {
-      "id": "coworking_startup",
-      "label": "Coworking & Startup",
-      "items": [
-        { "id": "pitch_deck", "term": "pitch deck", "cefr": "B2", "tags": ["startup"], "example": "We're finalizing the pitch deck." },
-        { "id": "early_traction", "term": "early traction", "cefr": "B2", "tags": ["growth"], "example": "We have early traction in Europe." },
-        { "id": "burn_rate", "term": "burn rate", "cefr": "C1", "tags": ["finance"], "example": "Our burn rate is sustainable now." },
-        { "id": "shipping_feature", "term": "ship a feature", "cefr": "B1", "tags": ["dev"], "example": "We plan to ship a feature weekly." },
-        { "id": "lean_iteration", "term": "lean iteration", "cefr": "B2", "tags": ["method"], "example": "We rely on lean iteration." },
-        { "id": "open_workspace", "term": "open workspace", "cefr": "A2", "tags": ["space"], "example": "It's a noisy open workspace." },
-        { "id": "focus_room", "term": "focus room", "cefr": "A2", "tags": ["space"], "example": "Book a focus room for calls." },
-        { "id": "desk_hoteling", "term": "desk hoteling", "cefr": "B2", "tags": ["policy"], "example": "We use desk hoteling for hybrids.", "hint": "reservation-based desk usage" },
-        { "id": "seed_round", "term": "seed round", "cefr": "B2", "tags": ["funding"], "example": "They're raising a seed round." },
-        { "id": "runway_months", "term": "runway (months)", "cefr": "B1", "tags": ["finance"], "example": "We have 14 months of runway." },
-        { "id": "cash_flow_positive", "term": "cash-flow positive", "cefr": "C1", "tags": ["finance"], "example": "We became cash-flow positive in Q3." },
-        { "id": "product_market_fit", "term": "product‑market fit", "cefr": "B2", "tags": ["growth"], "example": "We're iterating toward product‑market fit." },
-        { "id": "pivot_hypothesis", "term": "pivot hypothesis", "cefr": "C1", "tags": ["strategy"], "example": "We formed a pivot hypothesis.", "hint": "planned strategic change idea" },
-        { "id": "backlog_grooming", "term": "backlog grooming", "cefr": "B2", "tags": ["agile"], "example": "Backlog grooming is tomorrow." },
-        { "id": "technical_debt", "term": "technical debt", "cefr": "B2", "tags": ["engineering"], "example": "We scheduled time for technical debt." },
-        { "id": "founder_dilution", "term": "founder dilution", "cefr": "C1", "tags": ["finance"], "example": "The round causes founder dilution." },
-        { "id": "talent_retention", "term": "talent retention", "cefr": "C1", "tags": ["hr"], "example": "Talent retention is a priority." },
-        { "id": "async_standup", "term": "async stand-up", "cefr": "B1", "tags": ["workflow"], "example": "We do an async stand-up on Fridays." },
-        { "id": "code_freeze", "term": "code freeze", "cefr": "B1", "tags": ["release"], "example": "Code freeze begins tonight." },
-        { "id": "go_to_market", "term": "go-to-market plan", "cefr": "C2", "tags": ["strategy"], "example": "We drafted a go-to-market plan.", "hint": "launch & distribution strategy" }
       ]
     },
     {
@@ -88,6 +68,8 @@
         { "id": "cleaning_rota", "term": "cleaning rota", "cefr": "B1", "tags": ["household"], "example": "Let's update the cleaning rota." },
         { "id": "split_utilities", "term": "split utilities", "cefr": "A2", "tags": ["money"], "example": "We split utilities evenly." },
         { "id": "quiet_hours", "term": "quiet hours", "cefr": "A2", "tags": ["rule"], "example": "Quiet hours start at ten." },
+        { "id": "rent_due_date", "term": "rent due date", "cefr": "A2", "tags": ["admin"], "example": "What's the rent due date?" },
+        { "id": "trash_day", "term": "trash day", "cefr": "A1", "tags": ["household"], "example": "Tomorrow is trash day." },
         { "id": "leftover_label", "term": "label leftovers", "cefr": "A2", "tags": ["kitchen"], "example": "Please label leftovers." },
         { "id": "lease_extension", "term": "lease extension", "cefr": "B2", "tags": ["agreement"], "example": "We discussed a lease extension." },
         { "id": "roommate_meeting", "term": "roommate meeting", "cefr": "A2", "tags": ["event"], "example": "We scheduled a roommate meeting." },
@@ -123,6 +105,8 @@
         { "id": "portable_power", "term": "portable power bank", "cefr": "A2", "tags": ["gear"], "example": "Pack a portable power bank." },
         { "id": "hydration_pack", "term": "hydration pack", "cefr": "B1", "tags": ["gear"], "example": "A hydration pack saves trips." },
         { "id": "merch_booth", "term": "merch booth", "cefr": "B1", "tags": ["location"], "example": "Meet me by the merch booth." },
+        { "id": "water_station", "term": "water station", "cefr": "A2", "tags": ["location"], "example": "Fill up at the water station." },
+        { "id": "entry_gate", "term": "entry gate", "cefr": "A1", "tags": ["location"], "example": "Meet at the entry gate." },
         { "id": "crowd_surge", "term": "crowd surge", "cefr": "C1", "tags": ["safety"], "example": "Security monitored a minor crowd surge.", "hint": "sudden push of people" },
         { "id": "sound_check", "term": "sound check", "cefr": "B2", "tags": ["event"], "example": "We heard the band's sound check." },
         { "id": "wristband_scan", "term": "wristband scan", "cefr": "A2", "tags": ["entry"], "example": "You need a wristband scan each exit." },
@@ -156,7 +140,9 @@
         { "id": "overhead_line_issue", "term": "overhead line issue", "cefr": "C1", "tags": ["cause"], "example": "An overhead line issue caused outage." },
         { "id": "crowd_control", "term": "crowd control staff", "cefr": "B2", "tags": ["role"], "example": "Crowd control staff guided people." },
         { "id": "platform_reassignment", "term": "platform reassignment", "cefr": "C2", "tags": ["notice"], "example": "Sudden platform reassignment led to confusion.", "hint": "late platform change" },
-        { "id": "service_suspension", "term": "service suspension", "cefr": "C1", "tags": ["status"], "example": "A partial service suspension remains." }
+  { "id": "service_suspension", "term": "service suspension", "cefr": "C1", "tags": ["status"], "example": "A partial service suspension remains." },
+  { "id": "next_train", "term": "next train", "cefr": "A2", "tags": ["status"], "example": "When is the next train?" },
+        { "id": "delay_notice", "term": "delay notice", "cefr": "A2", "tags": ["notice"], "example": "There's a delay notice on the board." }
       ]
     },
     {
@@ -169,6 +155,8 @@
         { "id": "async_update", "term": "async update", "cefr": "B2", "tags": ["workflow"], "example": "Post an async update later." },
         { "id": "action_items", "term": "action items", "cefr": "A2", "tags": ["outcome"], "example": "Let's list action items." },
         { "id": "video_off", "term": "turn video off", "cefr": "A1", "tags": ["action"], "example": "I'll turn video off to save bandwidth." },
+        { "id": "join_call", "term": "join the call", "cefr": "A1", "tags": ["action"], "example": "Did everyone join the call?" },
+        { "id": "mute_button", "term": "mute button", "cefr": "A1", "tags": ["tool"], "example": "Where is the mute button?" },
         { "id": "join_late", "term": "join late", "cefr": "A2", "tags": ["status"], "example": "Sorry, I joined late." },
         { "id": "hard_mute", "term": "hard mute", "cefr": "B2", "tags": ["setting"], "example": "Enable a hard mute for presenters." },
         { "id": "calendar_invite", "term": "calendar invite", "cefr": "A2", "tags": ["admin"], "example": "Did you get the calendar invite?" },
@@ -198,6 +186,8 @@
         { "id": "empathy_statement", "term": "empathy statement", "cefr": "B1", "tags": ["tool"], "example": "Open with an empathy statement." },
         { "id": "accountability_gap", "term": "accountability gap", "cefr": "C1", "tags": ["issue"], "example": "There's an accountability gap here.", "hint": "unclear ownership" },
         { "id": "clarifying_question", "term": "clarifying question", "cefr": "A2", "tags": ["tool"], "example": "Ask a clarifying question first." },
+        { "id": "sorry_about_that", "term": "sorry about that", "cefr": "A2", "tags": ["apology"], "example": "Sorry about that, I misunderstood." },
+        { "id": "can_we_pause", "term": "can we pause?", "cefr": "A2", "tags": ["request"], "example": "Can we pause for a moment?" },
         { "id": "repair_attempt", "term": "repair attempt", "cefr": "B2", "tags": ["action"], "example": "That joke was a repair attempt." },
         { "id": "mutual_understanding", "term": "mutual understanding", "cefr": "B2", "tags": ["goal"], "example": "We reached mutual understanding." },
         { "id": "emotional_trigger", "term": "emotional trigger", "cefr": "C1", "tags": ["cause"], "example": "It became an emotional trigger." },
